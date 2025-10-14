@@ -7,8 +7,18 @@ from jalali_date.fields import JalaliDateField
 from jalali_date.widgets import AdminJalaliDateWidget
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Field, Submit
+class FlatJalaliDateWidget(AdminJalaliDateWidget):
+    template_name = "widgets/flat_jalali_input.html"
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        return context
+
+    def render(self, name, value, attrs=None, renderer=None):
+        # Use the template from the main templates directory
+        template = get_template(self.template_name)
+        context = self.get_context(name, value, attrs)
+        return template.render(context)
 
 
 class CustomUserCreationForm(forms.ModelForm):
@@ -171,16 +181,20 @@ class EmployeeTicketForm(forms.ModelForm):
         # Use JalaliDateField with AdminJalaliDateWidget for leave dates
         self.fields['leave_start'] = JalaliDateField(
             label=self.Meta.labels.get('leave_start', 'تاریخ شروع مرخصی'),
-            widget=AdminJalaliDateWidget(attrs={"class": "form-input jalali-date-input", "type": "text"}),
-            required=False  # پیش‌فرض optional
+            widget=FlatJalaliDateWidget(
+                attrs={"class": "form-input jalali-date-input"}),
+            required=False,
+            initial="",
         )
         self.fields['leave_end'] = JalaliDateField(
             label=self.Meta.labels.get('leave_end', 'تاریخ پایان مرخصی'),
-            widget=AdminJalaliDateWidget(attrs={"class": "form-input jalali-date-input", "type": "text"}),
-            required=False  # پیش‌فرض optional
+            widget=FlatJalaliDateWidget(
+                attrs={"class": "form-input jalali-date-input"}),
+            required=False,
+            initial="",
+            help_text="تاریخ پایان مرخصی باید بعد از تاریخ شروع باشد.",
         )
 
-        # پیش‌فرض optional برای همه فیلدهای شرطی
         conditional_fields = [
             'leave_start', 'leave_end', 'leave_type',
             'facility_amount', 'facility_duration_months',

@@ -1,0 +1,41 @@
+{% load widget_tweaks %}
+
+    {% if widget.label %}
+        <label for="{{ widget.attrs.id }}" class="form-label">{{ widget.label }}</label>
+    {% endif %}
+
+    {# Input field #}
+    <div class="position-relative">
+        <span class="calendar-icon position-absolute start-0 translate-middle-y top-50 mx-2" style="cursor:pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="rgba(107, 93, 2, 1)" class="bi bi-calendar-week" viewBox="0 0 16 16">
+                <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+            </svg>
+        </span>
+
+        <input type="text"
+               name="{{ widget.name }}"
+               value="{{ widget.value|stringformat:'s'|default_if_none:'' }}"
+               class="form-control {{ widget.attrs.class }}"
+               {% for attr, value in widget.attrs.items %}
+                   {% if attr != 'class' %} {{ attr }}="{{ value }}" {% endif %}
+               {% endfor %}
+        >
+    </div>
+
+    {# Help text #}
+    {% if widget.help_text %}
+        <small class="form-text text-muted">{{ widget.help_text }}</small>
+    {% endif %}
+
+    {# Errors #}
+    {% if widget.errors %}
+        <div class="invalid-feedback d-block">
+            {% for error in widget.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+{# Media (JS + CSS) for Jalali Calendar #}
+{{ widget.media }}
