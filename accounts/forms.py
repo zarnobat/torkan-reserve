@@ -1,14 +1,26 @@
-import jdatetime
 from django.contrib.auth.forms import UserChangeForm
 from .models import User, SupportTicket, EmployeeTicket, Suggestion
-from home.models import Time
 from django import forms
 from jalali_date.fields import JalaliDateField
 from jalali_date.widgets import AdminJalaliDateWidget
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Field, Submit
+from django.template.loader import get_template
+import datetime
+
+
+class FlatJalaliDateWidget(AdminJalaliDateWidget):
+    template_name = "widgets/flat_jalali_input.html"
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        return context
+
+    def render(self, name, value, attrs=None, renderer=None):
+        # Use the template from the main templates directory
+        template = get_template(self.template_name)
+        context = self.get_context(name, value, attrs)
+        return template.render(context)
 
 
 class CustomUserCreationForm(forms.ModelForm):
@@ -171,16 +183,20 @@ class EmployeeTicketForm(forms.ModelForm):
         # Use JalaliDateField with AdminJalaliDateWidget for leave dates
         self.fields['leave_start'] = JalaliDateField(
             label=self.Meta.labels.get('leave_start', 'تاریخ شروع مرخصی'),
-            widget=AdminJalaliDateWidget(attrs={"class": "form-input jalali-date-input", "type": "text"}),
-            required=False  # پیش‌فرض optional
+            widget=FlatJalaliDateWidget(
+                attrs={"class": "form-input jalali-date-input"}),
+            required=False,
+            initial="",
         )
         self.fields['leave_end'] = JalaliDateField(
             label=self.Meta.labels.get('leave_end', 'تاریخ پایان مرخصی'),
-            widget=AdminJalaliDateWidget(attrs={"class": "form-input jalali-date-input", "type": "text"}),
-            required=False  # پیش‌فرض optional
+            widget=FlatJalaliDateWidget(
+                attrs={"class": "form-input jalali-date-input"}),
+            required=False,
+            initial="",
+            help_text="تاریخ پایان مرخصی باید بعد از تاریخ شروع باشد.",
         )
 
-        # پیش‌فرض optional برای همه فیلدهای شرطی
         conditional_fields = [
             'leave_start', 'leave_end', 'leave_type',
             'facility_amount', 'facility_duration_months',
@@ -189,61 +205,64 @@ class EmployeeTicketForm(forms.ModelForm):
         for field in conditional_fields:
             self.fields[field].required = False
 
-        # تعیین ticket_type از instance یا data (برای post)
         ticket_type = None
         if self.instance and self.instance.pk:
             ticket_type = self.instance.ticket_type
         elif 'ticket_type' in self.data:
             ticket_type = self.data.get('ticket_type')
-        # اگر در kwargs باشه (مثل وقتی view پاس می‌ده)
         elif 'ticket_type' in kwargs:
             ticket_type = kwargs.pop('ticket_type', None)
 
-        # تنظیم required بر اساس ticket_type
         if ticket_type:
             if ticket_type == 'leave':
                 self.fields['leave_start'].required = True
+                self.fields['leave_start'].error_messages = {
+                    'required': 'لطفاً تاریخ شروع مرخصی را وارد کنید.'}
                 self.fields['leave_end'].required = True
+                self.fields['leave_end'].error_messages = {
+                    'required': 'لطفاً تاریخ پایان مرخصی را وارد کنید.'}
                 self.fields['leave_type'].required = True
+                self.fields['leave_type'].error_messages = {
+                    'required': 'لطفاً نوع مرخصی را انتخاب کنید.'}
             elif ticket_type == 'facility':
                 self.fields['facility_amount'].required = True
+                self.fields['facility_amount'].error_messages = {
+                    'required': 'لطفاً مبلغ تسهیلات را وارد کنید.'}
                 self.fields['facility_duration_months'].required = True
+                self.fields['facility_duration_months'].error_messages = {
+                    'required': 'لطفاً مدت بازپرداخت را وارد کنید.'}
             elif ticket_type == 'advance':
                 self.fields['advance_amount'].required = True
+                self.fields['advance_amount'].error_messages = {
+                    'required': 'لطفاً مبلغ مساعده را وارد کنید.'}
             elif ticket_type == 'other':
                 self.fields['description'].required = True
+                self.fields['description'].error_messages = {
+                    'required': 'لطفاً توضیحات را وارد کنید.'}
 
-        # تنظیم initial اگر لازم
         if not self.instance.pk:
             self.fields['ticket_type'].initial = ticket_type or 'other'
         else:
             self.fields['ticket_type'].initial = ticket_type or 'other'
 
-    def clean(self):
-        cleaned_data = super().clean()
-        ticket_type = cleaned_data.get('ticket_type')
+    def clean_leave_start(self):
+        leave_start = self.cleaned_data.get("leave_start")
+        if leave_start < datetime.date.today():
+            raise forms.ValidationError(
+                "تاریخ شروع مرخصی نمی‌تواند در گذشته باشد.")
+        return leave_start
 
-        # validation شرطی (علاوه بر required)
-        if ticket_type == 'leave':
-            if not cleaned_data.get('leave_start'):
-                self.add_error('leave_start', 'تاریخ شروع مرخصی الزامی است.')
-            if not cleaned_data.get('leave_end'):
-                self.add_error('leave_end', 'تاریخ پایان مرخصی الزامی است.')
-            if not cleaned_data.get('leave_type'):
-                self.add_error('leave_type', 'نوع مرخصی الزامی است.')
-        elif ticket_type == 'facility':
-            if not cleaned_data.get('facility_amount'):
-                self.add_error('facility_amount', 'مبلغ تسهیلات الزامی است.')
-            if not cleaned_data.get('facility_duration_months'):
-                self.add_error('facility_duration_months', 'مدت بازپرداخت الزامی است.')
-        elif ticket_type == 'advance':
-            if not cleaned_data.get('advance_amount'):
-                self.add_error('advance_amount', 'مبلغ مساعده الزامی است.')
-        elif ticket_type == 'other':
-            if not cleaned_data.get('description'):
-                self.add_error('description', 'توضیحات الزامی است.')
-
-        return cleaned_data
+    def clean_leave_end(self):
+        leave_start = self.cleaned_data.get("leave_start")
+        leave_end = self.cleaned_data.get("leave_end")
+        if leave_end and leave_end < datetime.date.today():
+            raise forms.ValidationError(
+                "تاریخ پایان مرخصی نمی‌تواند در گذشته باشد.")
+        elif leave_start and leave_end:
+            if leave_end < leave_start:
+                raise forms.ValidationError(
+                    "تاریخ پایان مرخصی باید بعد از تاریخ شروع باشد.")
+        return leave_end
 
     def clean_facility_amount(self):
         value = self.cleaned_data.get("facility_amount")

@@ -1,0 +1,52 @@
+:root {
+    --jdp-background-color: white !important;
+    --jdp-text-color: black !important;
+    --jdp-background-day-color: rgba(128, 128, 128, 0.3) !important;
+}
+
+[data-theme="dark"] {
+    --jdp-background-color: #1e1e1e !important;
+    --jdp-text-color: #f5f5f5 !important;
+    --jdp-background-day-color: rgba(128, 128, 128, 0.1) !important;
+}
+
+jdp-container {
+    background-color: var(--jdp-background-color) !important;
+    color: var(--jdp-text-color) !important;
+}
+
+jdp-container .jdp-day-name,
+jdp-container .jdp-day {
+    color: var(--jdp-text-color);
+}
+
+jdp-container .jdp-icon-plus svg path,
+jdp-container .jdp-icon-minus svg path {
+    fill: gold !important;
+    filter: drop-shadow(10px 5px 8px gold);
+    stroke: var(--jdp-text-color);
+    stroke-width: 10px;
+}
+
+jdp-container .jdp-icon-plus,
+jdp-container .jdp-icon-minus {
+    border-color: gold !important;
+}
+
+jdp-container select {
+    background-color: var(--jdp-background-color) !important;
+    color: var(--jdp-text-color) !important;
+}
+
+jdp-container .jdp-month,
+jdp-container .jdp-year {
+    margin: 0px 7px !important;
+}
+
+jdp-container select option {
+    background-color: var(--jdp-background-color);
+}
+
+jdp-container .jdp-day-name {
+    background-color: var(--jdp-background-day-color);
+}

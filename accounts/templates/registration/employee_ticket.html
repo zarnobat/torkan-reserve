@@ -4,100 +4,24 @@
 {% load crispy_forms_tags %}
 {%block head%}
 <title>ارسال تیکت پرسنل - کارگاه طلاسازی</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/flatpickr.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/panel.css' %}">
 <link rel="stylesheet" href="{% static 'admin/css/django_jalali.min.css' %}">
-<link rel="stylesheet" href="{% static 'css/time-picker-calendar.css' %}">
-<style>
-  .gold-gradient{background:linear-gradient(45deg,#FFD700,#DAA520)}
-  .header{border-radius:.5rem .5rem 0 0;padding:2rem;text-align:center;position:relative;overflow:hidden}
-  .header-overlay{position:absolute;inset:0;background:black;opacity:.1}
-  {% comment %} .form-section{margin-top:1.5rem;padding:1rem}
-  .form-input,
-  .form-textarea,
-  .form-select {
-    border: 1px solid #DAA520;
-    border-radius: .5rem;
-    padding: .5rem;
-    width: 100%;
-    transition: border-color .3s ease-in-out;
-  } {% endcomment %}
-
-  {% comment %} .form-select {
-    padding-right: 2rem;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg fill='%23DAA520' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: left 0.75rem center;
-    background-size: 1rem;
-    direction: rtl;
-  }
-
-  .form-input:focus,
-  .form-textarea:focus,
-  .form-select:focus {
-    border-color: #FFD700;
-    outline: none;
-    box-shadow: 0 0 5px rgba(218, 165, 32, .3);
-  }
-
-  .form-select::-ms-expand {
-    display: none;
-  } {% endcomment %}
-
-  {% comment %} label{color:#4B5563;font-weight:600;margin-bottom:.5rem;display:block} {% endcomment %}
-
-  .gold-button{background:linear-gradient(45deg,#FFD700,#DAA520);color:white;font-weight:600;padding:.5rem 1rem;border-radius:.5rem;width:100%;margin-top:1.5rem;transition:transform .2s ease-in-out,box-shadow .2s ease-in-out;border:none}
-  .gold-button:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,.2)}
-  .success-message{background:#d1fae5;border:1px solid #10b981;border-radius:.5rem;padding:1rem;margin-bottom:1rem;color:#065f46;text-align:center}
-  .error-list{background:#fee2e2;border:1px solid #ef4444;border-radius:.5rem;padding:1rem;margin-bottom:1rem}
-  .error-list li{color:#b91c1c;margin-bottom:.5rem}
-  .field-error{color:#b91c1c;font-size:.875rem;margin-top:.25rem;display:none}
-  .field-error.show{display:block}
-  .hidden{display:none}
-  .mb-4{margin-bottom:1rem}
-
-  /* Icons for leave_start and leave_end date fields */
-  #id_leave_start,
-  #id_leave_end {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23DAA520' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/></svg>");
-    background-repeat: no-repeat;
-    background-position: left .75rem center; /* RTL: icon on left */
-    background-size: 1rem 1rem;
-    padding-left: 2.25rem; /* make room for icon */
-  }
-  .header h1 {
-    font-weight: 700;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/jalali-override.css' %}">
+<script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
+<script type="module" src="{% static 'js/employee_ticket.js' %}"></script>
 {%endblock%}
 {%block content%}
   <div class="container glass-element w-75 border border-1 rounded-3 shadow-lg my-5 p-0">
     <div class="card bg-transparent border-0">
       <!-- Header -->
-      <div class="card-header header gold-gradient">
-        <h1 class="fs-2 fw-bolder text-white">ارسال تیکت پرسنل</h1>
+      <div class="card-header text-center gold-gradient">
+        <h1 class="fs-2 fw-bolder text-white my-3">ارسال تیکت پرسنل</h1>
       </div>
       <div class="card-body">
         <!-- Form input -->
         <div class="form-section">
-          {% if success %}
-            <div class="success-message"><i class="fas fa-check-circle"></i> تیکت با موفقیت ارسال شد!</div>
-          {% endif %} 
           <form id="ticketForm" method="post" action="">
             {% csrf_token %}
-            {% if messages %}
-              {% for message in messages %}
-                  <div class="alert alert-danger d-flex align-items-center" role="alert">
-                      <div style="margin-right: 0.5rem;">
-                          {{ message }}
-                      </div>
-                  </div>
-              {% endfor %}
-            {% endif %}
             {% for field in form %}
               <div class="mb-4 field-wrapper {% if field.name == 'employee' or field.name == 'status' %}hidden{% endif %}" data-field-name="{{ field.name }}">
                 {{ field | as_crispy_field }}
@@ -115,153 +39,4 @@
       </div>
     </div>
   </div>
-
-<script src="{% static 'js/flatpickr.min.js' %}"></script>
-<script src="{% static 'js/flatpickr.fa.js' %}"></script>
-<script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
-<script src="{% static 'js/flatpickr-custom-arrows.js' %}"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-  if (window.flatpickr && flatpickr.l10ns && flatpickr.l10ns.fa) {
-    flatpickr.localize(flatpickr.l10ns.fa);
-  }
-  const ticketTypeSelect = document.querySelector("#id_ticket_type");
-  const wrappers = Array.from(document.querySelectorAll(".field-wrapper"));
-
-  const map = {
-      leave: ["leave_start", "leave_end", "leave_type"],
-      facility: ["facility_amount", "facility_duration_months"],
-      advance: ["advance_amount"],
-      other: ["description"]
-  };
-
-  function setVisibility(selected) {
-      const sel = selected || ticketTypeSelect.value || 'other';
-      console.log("Selected type:", sel);  // debug: نوع انتخاب‌شده
-      wrappers.forEach(w => {
-          const name = w.dataset.fieldName;
-          if (name === 'employee' || name === 'status' || name === 'ticket_type') {
-              if (name !== 'ticket_type') w.classList.add('hidden');
-              else w.classList.remove('hidden');
-              return;
-          }
-          if (map[sel] && map[sel].includes(name)) {
-              w.classList.remove('hidden');
-          } else {
-              w.classList.add('hidden');
-          }
-      });
-  }
-
-  if (!ticketTypeSelect) {
-      console.error("فیلد ticket_type در فرم پیدا نشد");
-      return;
-  }
-
-  // مقدار اولیه فرم فوراً اعمال شود
-  setVisibility(ticketTypeSelect.value);
-
-  // نمایش فیلدها با تغییر select
-  ticketTypeSelect.addEventListener('change', function () {
-      setVisibility(this.value);
-  });
-
-  // تابع بهبودیافته برای فرمت سه‌رقمی
-  function setupPriceInput(selector) {
-      const input = document.querySelector(selector);
-      if (!input) return;
-
-      // تغییر نوع به text و استایل LTR برای سازگاری با اعداد
-      input.setAttribute("type", "text");
-      input.style.textAlign = "left";
-      input.style.direction = "ltr";
-
-      // فیلد مخفی برای مقدار خام (بدون کاما)
-      const hiddenInput = document.createElement("input");
-      hiddenInput.type = "hidden";
-      hiddenInput.name = input.name;
-      input.name = input.name + "_display";  // نام نمایش رو تغییر می‌دیم
-      input.parentNode.insertBefore(hiddenInput, input.nextSibling);
-
-      const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });  // کاما انگلیسی (,)
-      // اگر کاما پارسی می‌خوای: const formatter = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '،');
-
-      // تابع برای تبدیل اعداد فارسی به انگلیسی
-      function normalizeDigits(value) {
-          return value.replace(/[۰-۹]/g, function(d) {
-              return String.fromCharCode(d.charCodeAt(0) - 1728);  // تبدیل ۰-۹ به 0-9
-          });
-      }
-
-      // تابع برای شمارش کاماها قبل از یک موقعیت خاص
-      function countCommasBefore(str, pos) {
-          return (str.slice(0, pos).match(/,/g) || []).length;
-      }
-
-      // فرمت اولیه اگر value داشته باشه
-      if (input.value) {
-          let initialValue = normalizeDigits(input.value.replace(/,/g, "").trim());
-          console.log("Initial value (normalized):", initialValue);  // debug: مقدار اولیه
-          if (/^\d+$/.test(initialValue)) {
-              input.value = formatter.format ? formatter.format(initialValue) : formatter(initialValue);
-              hiddenInput.value = initialValue;
-          }
-      }
-
-      input.addEventListener("input", function (e) {
-          const errorElement = document.getElementById(`error-${e.target.id}`);
-          const oldValue = e.target.value;
-          const cursorStart = e.target.selectionStart;
-          const cursorEnd = e.target.selectionEnd;
-
-          // محاسبه موقعیت بدون کاما
-          const commasBeforeStart = countCommasBefore(oldValue, cursorStart);
-          const commasBeforeEnd = countCommasBefore(oldValue, cursorEnd);
-          let value = normalizeDigits(oldValue.replace(/,/g, "").trim());  // normalize اعداد فارسی
-          console.log("Input value (normalized):", value);  // debug: مقدار بعد از تایپ
-
-          if (/^\d*$/.test(value)) {
-              if (value !== "") {
-                  const formatted = formatter.format ? formatter.format(value) : formatter(value);
-                  console.log("Formatted value:", formatted);  // debug: فرمت‌شده
-
-                  // محاسبه موقعیت جدید کرسور
-                  const newStart = cursorStart + (countCommasBefore(formatted, cursorStart - commasBeforeStart) - commasBeforeStart);
-                  const newEnd = cursorEnd + (countCommasBefore(formatted, cursorEnd - commasBeforeEnd) - commasBeforeEnd);
-
-                  e.target.value = formatted;
-                  hiddenInput.value = value;
-                  e.target.setSelectionRange(newStart, newEnd);
-              } else {
-                  hiddenInput.value = "";
-              }
-              errorElement.classList.remove("show");
-              errorElement.textContent = "";
-          } else {
-              value = value.replace(/\D/g, "");
-              e.target.value = value ? (formatter.format ? formatter.format(value) : formatter(value)) : "";
-              hiddenInput.value = value;
-              errorElement.textContent = "لطفاً فقط عدد وارد کنید";
-              errorElement.classList.add("show");
-          }
-      });
-
-      // جلوگیری از ورود غیرعددی (انگلیسی یا فارسی)
-      input.addEventListener("keypress", function(e) {
-          if (!/[0-9۰-۹]/.test(e.key)) {
-              e.preventDefault();
-          }
-      });
-  }
-
-  setupPriceInput("#id_facility_amount");
-  setupPriceInput("#id_advance_amount");
-
-  // قبل از ارسال فرم، اطمینان از ارسال مقادیر خام
-  document.getElementById("ticketForm").addEventListener("submit", function() {
-    // لازم نیست چیزی اضافه کنی
-  });
-});
-</script>
 {%endblock%}
