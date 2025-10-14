@@ -1,12 +1,14 @@
-import jdatetime
 from django.contrib.auth.forms import UserChangeForm
 from .models import User, SupportTicket, EmployeeTicket, Suggestion
-from home.models import Time
 from django import forms
 from jalali_date.fields import JalaliDateField
 from jalali_date.widgets import AdminJalaliDateWidget
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from django.template.loader import get_template
+import datetime
+
+
 class FlatJalaliDateWidget(AdminJalaliDateWidget):
     template_name = "widgets/flat_jalali_input.html"
 
@@ -243,31 +245,24 @@ class EmployeeTicketForm(forms.ModelForm):
         else:
             self.fields['ticket_type'].initial = ticket_type or 'other'
 
-    def clean(self):
-        cleaned_data = super().clean()
-        ticket_type = cleaned_data.get('ticket_type')
+    def clean_leave_start(self):
+        leave_start = self.cleaned_data.get("leave_start")
+        if leave_start < datetime.date.today():
+            raise forms.ValidationError(
+                "تاریخ شروع مرخصی نمی‌تواند در گذشته باشد.")
+        return leave_start
 
-        # validation شرطی (علاوه بر required)
-        if ticket_type == 'leave':
-            if not cleaned_data.get('leave_start'):
-                self.add_error('leave_start', 'تاریخ شروع مرخصی الزامی است.')
-            if not cleaned_data.get('leave_end'):
-                self.add_error('leave_end', 'تاریخ پایان مرخصی الزامی است.')
-            if not cleaned_data.get('leave_type'):
-                self.add_error('leave_type', 'نوع مرخصی الزامی است.')
-        elif ticket_type == 'facility':
-            if not cleaned_data.get('facility_amount'):
-                self.add_error('facility_amount', 'مبلغ تسهیلات الزامی است.')
-            if not cleaned_data.get('facility_duration_months'):
-                self.add_error('facility_duration_months', 'مدت بازپرداخت الزامی است.')
-        elif ticket_type == 'advance':
-            if not cleaned_data.get('advance_amount'):
-                self.add_error('advance_amount', 'مبلغ مساعده الزامی است.')
-        elif ticket_type == 'other':
-            if not cleaned_data.get('description'):
-                self.add_error('description', 'توضیحات الزامی است.')
-
-        return cleaned_data
+    def clean_leave_end(self):
+        leave_start = self.cleaned_data.get("leave_start")
+        leave_end = self.cleaned_data.get("leave_end")
+        if leave_end and leave_end < datetime.date.today():
+            raise forms.ValidationError(
+                "تاریخ پایان مرخصی نمی‌تواند در گذشته باشد.")
+        elif leave_start and leave_end:
+            if leave_end < leave_start:
+                raise forms.ValidationError(
+                    "تاریخ پایان مرخصی باید بعد از تاریخ شروع باشد.")
+        return leave_end
 
     def clean_facility_amount(self):
         value = self.cleaned_data.get("facility_amount")
