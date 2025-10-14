@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'channels',
     "ckeditor",
     "ckeditor_uploader",
-
+    'widget_tweaks',
     # my app
     'home',
     'accounts',
