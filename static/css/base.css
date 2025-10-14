@@ -257,6 +257,12 @@ body {
     font-weight: 300;
 }
 
+.invalid-feedback p strong {
+    color: red ;
+    font-size: 0.85rem ;
+    font-weight: 600;
+}
+
 .logo {
     display: flex;
     align-items: center;
