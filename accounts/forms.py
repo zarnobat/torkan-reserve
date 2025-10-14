@@ -203,31 +203,41 @@ class EmployeeTicketForm(forms.ModelForm):
         for field in conditional_fields:
             self.fields[field].required = False
 
-        # تعیین ticket_type از instance یا data (برای post)
         ticket_type = None
         if self.instance and self.instance.pk:
             ticket_type = self.instance.ticket_type
         elif 'ticket_type' in self.data:
             ticket_type = self.data.get('ticket_type')
-        # اگر در kwargs باشه (مثل وقتی view پاس می‌ده)
         elif 'ticket_type' in kwargs:
             ticket_type = kwargs.pop('ticket_type', None)
 
-        # تنظیم required بر اساس ticket_type
         if ticket_type:
             if ticket_type == 'leave':
                 self.fields['leave_start'].required = True
+                self.fields['leave_start'].error_messages = {
+                    'required': 'لطفاً تاریخ شروع مرخصی را وارد کنید.'}
                 self.fields['leave_end'].required = True
+                self.fields['leave_end'].error_messages = {
+                    'required': 'لطفاً تاریخ پایان مرخصی را وارد کنید.'}
                 self.fields['leave_type'].required = True
+                self.fields['leave_type'].error_messages = {
+                    'required': 'لطفاً نوع مرخصی را انتخاب کنید.'}
             elif ticket_type == 'facility':
                 self.fields['facility_amount'].required = True
+                self.fields['facility_amount'].error_messages = {
+                    'required': 'لطفاً مبلغ تسهیلات را وارد کنید.'}
                 self.fields['facility_duration_months'].required = True
+                self.fields['facility_duration_months'].error_messages = {
+                    'required': 'لطفاً مدت بازپرداخت را وارد کنید.'}
             elif ticket_type == 'advance':
                 self.fields['advance_amount'].required = True
+                self.fields['advance_amount'].error_messages = {
+                    'required': 'لطفاً مبلغ مساعده را وارد کنید.'}
             elif ticket_type == 'other':
                 self.fields['description'].required = True
+                self.fields['description'].error_messages = {
+                    'required': 'لطفاً توضیحات را وارد کنید.'}
 
-        # تنظیم initial اگر لازم
         if not self.instance.pk:
             self.fields['ticket_type'].initial = ticket_type or 'other'
         else:
