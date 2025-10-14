@@ -14,26 +14,14 @@
   <div class="container glass-element w-75 border border-1 rounded-3 shadow-lg my-5 p-0">
     <div class="card bg-transparent border-0">
       <!-- Header -->
-      <div class="card-header header gold-gradient">
-        <h1 class="fs-2 fw-bolder text-white">ارسال تیکت پرسنل</h1>
+      <div class="card-header text-center gold-gradient">
+        <h1 class="fs-2 fw-bolder text-white my-3">ارسال تیکت پرسنل</h1>
       </div>
       <div class="card-body">
         <!-- Form input -->
         <div class="form-section">
-          {% if success %}
-            <div class="success-message"><i class="fas fa-check-circle"></i> تیکت با موفقیت ارسال شد!</div>
-          {% endif %} 
           <form id="ticketForm" method="post" action="">
             {% csrf_token %}
-            {% if messages %}
-              {% for message in messages %}
-                  <div class="alert alert-danger d-flex align-items-center" role="alert">
-                      <div style="margin-right: 0.5rem;">
-                          {{ message }}
-                      </div>
-                  </div>
-              {% endfor %}
-            {% endif %}
             {% for field in form %}
               <div class="mb-4 field-wrapper {% if field.name == 'employee' or field.name == 'status' %}hidden{% endif %}" data-field-name="{{ field.name }}">
                 {{ field | as_crispy_field }}
