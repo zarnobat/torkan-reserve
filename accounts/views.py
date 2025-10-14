@@ -205,13 +205,18 @@ def staff_create_ticket(request):
                 ticket.save()
                 return redirect('ticket_success')
             else:
-                # If form is not valid, keep the ticket_type for re-rendering the form
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        messages.error(request, error)
+                # Save form errors and data in session
+                request.session['form_errors'] = form.errors
+                request.session['form_data'] = request.POST
                 return redirect('staff_ticket')
     else:
-        form = EmployeeTicketForm(initial={'employee': request.user})
+        # Check if there are form data in session
+        if 'form_data' in request.session:
+            form = EmployeeTicketForm(data=request.session['form_data'])
+            form._errors = request.session.pop('form_errors', form.errors)
+            request.session.pop('form_data', None)
+        else:
+            form = EmployeeTicketForm(initial={'employee': request.user})
     return render(request, 'registration/employee_ticket.html', {'form': form, 'ticket_type': ticket_type})
 
 
