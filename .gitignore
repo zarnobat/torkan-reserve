@@ -1,6 +1,8 @@
 __pycache__/
 db.sqlite3
 __pypackages__/
+acme-challenge
+ssl_certs
 postgres_database/
 db_reserve
 postgres
@@ -8,9 +10,12 @@ database
 acme-challenge
 media/*
 cert/
+postgres
+!media/.gitkeep
 # Environments
 .env
 .venv
+env/
 venv/
 env/
 .idea/
