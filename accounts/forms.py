@@ -247,7 +247,10 @@ class EmployeeTicketForm(forms.ModelForm):
 
     def clean_leave_start(self):
         leave_start = self.cleaned_data.get("leave_start")
-        if leave_start < datetime.date.today():
+        if not leave_start:
+            raise forms.ValidationError(
+                "لطفاً تاریخ شروع مرخصی را وارد کنید.")
+        elif leave_start < datetime.date.today():
             raise forms.ValidationError(
                 "تاریخ شروع مرخصی نمی‌تواند در گذشته باشد.")
         return leave_start
@@ -255,7 +258,10 @@ class EmployeeTicketForm(forms.ModelForm):
     def clean_leave_end(self):
         leave_start = self.cleaned_data.get("leave_start")
         leave_end = self.cleaned_data.get("leave_end")
-        if leave_end and leave_end < datetime.date.today():
+        if not leave_end:
+            raise forms.ValidationError(
+                "لطفاً تاریخ پایان مرخصی را وارد کنید.")
+        elif leave_end and leave_end < datetime.date.today():
             raise forms.ValidationError(
                 "تاریخ پایان مرخصی نمی‌تواند در گذشته باشد.")
         elif leave_start and leave_end:
