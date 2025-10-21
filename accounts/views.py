@@ -16,7 +16,7 @@ from config.settings import DEBUG
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 
-
+@never_cache
 def phone_number_view(request):
     if request.method == 'POST':
         form = PhoneNumberForm(request.POST)

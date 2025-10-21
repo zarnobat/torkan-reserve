@@ -20,8 +20,8 @@ class NotificationAdmin(admin.ModelAdmin):
             obj.save()
         return super().change_view(request, object_id, form_url, extra_context)
 
-    class Media:
-        js = ("notifications/js/notifications.js",)
+    # class Media:
+    #     js = ("notifications/js/notifications.js",)
                 
 
 @admin.register(SMS)
