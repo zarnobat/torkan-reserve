@@ -50,3 +50,15 @@ jdp-container select option {
 jdp-container .jdp-day-name {
     background-color: var(--jdp-background-day-color);
 }
+
+/* For Calendar picker field */
+
+.form-floating {
+    position: relative;
+}
+
+.icon-calendar {
+    position: absolute;
+    top: 2.75rem;
+    left: 0.5rem;
+}
