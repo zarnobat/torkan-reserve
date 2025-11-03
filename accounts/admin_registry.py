@@ -21,3 +21,4 @@ custom_admin_site.register(Invoice, InvoiceAdmin)
 custom_admin_site.register(CustomerProfile, CustomerProfileAdmin)
 custom_admin_site.register(EmployeeTicketProxy, EmployeeTicketProxyAdmin)
 custom_admin_site.register(Suggestion, SuggestionAdmin)
+
