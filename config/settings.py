@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "ckeditor",
     "ckeditor_uploader",
     'widget_tweaks',
+    'import_export',
     # my app
     'home',
     'accounts',

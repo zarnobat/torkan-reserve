@@ -55,7 +55,7 @@ class RequestReservationAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     fields = ['suggested_jalali_date', 'suggested_reservation_time', 'user', 'explanation', 'status']
     search_fields = ['user__name', 'user__phone_number']
     ordering = ['-datetime_created', ]
-    readonly_fields = ['user', 'suggested_jalali_date', 'suggested_reservation_time', 'explanation']
+    readonly_fields = ['suggested_jalali_date', 'suggested_reservation_time', 'explanation']
     inlines = [TimeInline]
 
     @admin.display(description=_('suggested_reservation_date'))
