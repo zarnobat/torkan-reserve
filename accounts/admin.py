@@ -56,6 +56,9 @@ class UserAdmin(ImportExportModelAdmin, BaseUserAdmin):
          ),
     )
 
+    def has_view_permission(self, request, obj=None):
+        return True
+
     @admin.display(description=_('datetime joined'))
     def date_joined_jalali(self, obj):
         return datetime2jalali(obj.date_joined).strftime('%Y/%m/%d - %H:%M')
