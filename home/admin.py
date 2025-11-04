@@ -17,6 +17,8 @@ class TimeAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     ordering = ('-fix_reserved_date',)
     autocomplete_fields = ('request_reservation',)
 
+    def has_view_permission(self, request, obj=None):
+        return True
 
     @admin.display(description=_('Reservation date'))
     def format_date(self, obj):
@@ -58,6 +60,9 @@ class RequestReservationAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     readonly_fields = ['suggested_jalali_date', 'suggested_reservation_time', 'explanation']
     inlines = [TimeInline]
     autocomplete_fields = ['user']
+
+    def has_view_permission(self, request, obj=None):
+        return True
 
     @admin.display(description=_('suggested_reservation_date'))
     def suggested_jalali_date(self, obj):
