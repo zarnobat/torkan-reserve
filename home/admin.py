@@ -6,9 +6,10 @@ from .models import Time, Operation, OperationSetting, RequestReservation
 from .utils import send_reservation_sms
 from django.utils.translation import gettext_lazy as _
 from .forms import TimeAdminForm
+from config.admin_site import custom_admin_site
 
 
-@admin.register(Time)
+@admin.register(Time, site=custom_admin_site)
 class TimeAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     form = TimeAdminForm
     list_display = (
@@ -31,15 +32,17 @@ class TimeAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     @admin.display(description=_('datetime saved'))
     def datetime_saved(self, obj):
         return datetime2jalali(obj.request_reservation.datetime_created).strftime('%Y/%m/%d - %H:%M')
+    
+    autocomplete_fields = ('request_reservation',)
 
 
-@admin.register(Operation)
+@admin.register(Operation, site=custom_admin_site)
 class OperationAdmin(admin.ModelAdmin):
     list_display = ['operation_name', ]
     search_fields = ['operation_name', ]
 
 
-@admin.register(OperationSetting)
+@admin.register(OperationSetting, site=custom_admin_site)
 class OperationSettingAdmin(admin.ModelAdmin):
     list_display = ['Product', 'capacity_materials', 'unit_capacity', 'display_calculation', ]
     readonly_fields = ('display_calculation',)
@@ -51,7 +54,7 @@ class TimeInline(StackedInlineJalaliMixin, admin.TabularInline):
     form = TimeAdminForm
 
 
-@admin.register(RequestReservation)
+@admin.register(RequestReservation, site=custom_admin_site)
 class RequestReservationAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_display = ['id', 'user', 'datetime_created_jalali', 'suggested_jalali_date', 'status', ]
     fields = ['suggested_jalali_date', 'suggested_reservation_time', 'user', 'explanation', 'status']
