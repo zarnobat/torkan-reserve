@@ -40,7 +40,7 @@ class UserAdmin(ImportExportModelAdmin, BaseUserAdmin):
     skip_admin_log = True
     list_display = ('id', 'phone_number', 'name', 'is_staff', 'is_active')
     list_filter = ('is_staff', 'is_active')
-    search_fields = ('phone_number', 'name')
+    search_fields = ['phone_number', 'name']
     ordering = ('phone_number',)
     fieldsets = (
         (None, {'fields': ('phone_number', 'password')}),
