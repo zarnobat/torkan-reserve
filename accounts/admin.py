@@ -1,12 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.urls import path
-from django import forms
 from .models import *
 from .resources import *
-from .forms import CustomUserCreationForm, CustomUserChangeForm
 from jalali_date.admin import ModelAdminJalaliMixin
 from django.utils.html import format_html, format_html_join
 from jalali_date import datetime2jalali, datetime2jalali
@@ -14,13 +9,9 @@ from django.utils.translation import gettext_lazy as _
 from home.models import Time
 from jalali_date import date2jalali
 import jdatetime
-from import_export.formats.base_formats import XLSX, CSV
-from import_export import resources, fields
-from import_export.results import RowResult
 from import_export.admin import ImportExportModelAdmin
 from import_export.admin import ExportMixin
-from django.utils.crypto import get_random_string
-from django.contrib.auth import get_user_model
+from config.admin_site import custom_admin_site
 
 
 class WorkHourInline(admin.TabularInline):
@@ -33,7 +24,7 @@ class PayslipInline(admin.TabularInline):
     extra = 0
 
 
-@admin.register(User)
+@admin.register(User, site=custom_admin_site)
 class UserAdmin(ImportExportModelAdmin, BaseUserAdmin):
 
     resource_class = UserResources
@@ -62,10 +53,9 @@ class UserAdmin(ImportExportModelAdmin, BaseUserAdmin):
     @admin.display(description=_('datetime joined'))
     def date_joined_jalali(self, obj):
         return datetime2jalali(obj.date_joined).strftime('%Y/%m/%d - %H:%M')
-    
 
 
-@admin.register(WorkHourReport)
+@admin.register(WorkHourReport, site=custom_admin_site)
 class WorkHourReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     resource_class = WorkHourReportResources
     skip_admin_log = True
@@ -74,7 +64,7 @@ class WorkHourReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ('employee__phone_number', 'employee__name')
 
 
-@admin.register(Payslip)
+@admin.register(Payslip, site=custom_admin_site)
 class PayslipAdmin(admin.ModelAdmin):
     list_display = ('employee', 'year', 'month', 'payslip_jalali_date')
     list_filter = ('year', 'month')
@@ -85,7 +75,7 @@ class PayslipAdmin(admin.ModelAdmin):
         return date2jalali(obj.date_created).strftime('%Y/%m/%d')
 
 
-@admin.register(StaffProfile)
+@admin.register(StaffProfile, site=custom_admin_site)
 class StaffProfileAdmin(ExportMixin, ModelAdminJalaliMixin, admin.ModelAdmin):
     resource_classes = [StaffProfileExportResources]
     inlines = [WorkHourInline, PayslipInline]
@@ -103,7 +93,7 @@ class StaffProfileAdmin(ExportMixin, ModelAdminJalaliMixin, admin.ModelAdmin):
         if obj.birth_date:
             return date2jalali(obj.birth_date).strftime('%Y/%m/%d')
         return ""
-    
+
 
 # مشتری ها
 
@@ -131,7 +121,7 @@ class TicketReplyInline(admin.TabularInline):
         return FormSet
 
 
-@admin.register(SupportTicketProxy)
+@admin.register(SupportTicketProxy, site=custom_admin_site)
 class SupportTicketProxyAdmin(admin.ModelAdmin):
     list_display = ['sender', 'title', 'created_jalali',
                     'time_created', 'colored_status']
@@ -204,7 +194,7 @@ class SupportTicketProxyAdmin(admin.ModelAdmin):
 
 # admin.site.register(TicketReply,TicketReplyAdmin)
 
-
+@admin.register(Invoice, site=custom_admin_site)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['customer', 'invoice_jalali_date', 'invoice_preview']
     list_filter = ['created_date']
@@ -228,8 +218,6 @@ class InvoiceAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-admin.site.register(Invoice, InvoiceAdmin)
-
 class InvoiceInline(admin.TabularInline):
     model = Invoice
     extra = 0
@@ -240,7 +228,7 @@ class InvoiceInline(admin.TabularInline):
         return False
 
 
-@admin.register(CustomerProfile)
+@admin.register(CustomerProfile, site=custom_admin_site)
 class CustomerProfileAdmin(ExportMixin, admin.ModelAdmin):
     resource_classes = [CustomerProfileExportResources]
     list_display = ['user',]
@@ -462,7 +450,7 @@ class EmployeeTicketReplyInline(admin.TabularInline):
         return formset
 
 
-@admin.register(EmployeeTicketProxy)
+@admin.register(EmployeeTicketProxy, site=custom_admin_site)
 class EmployeeTicketProxyAdmin(admin.ModelAdmin):
     list_display = (
         'employee__name', 'ticket_type', 'leave_start_jalali', 'leave_end_jalali', 'created_jalali', 'time_created',
@@ -541,7 +529,7 @@ class EmployeeTicketProxyAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(Suggestion)
+@admin.register(Suggestion, site=custom_admin_site)
 class SuggestionAdmin(admin.ModelAdmin):
     list_display = ("title", "user", "user_type",
                     "get_shamsi_date", "is_reviewed")
@@ -560,4 +548,3 @@ class SuggestionAdmin(admin.ModelAdmin):
             obj.is_reviewed = True
             obj.save(update_fields=["is_reviewed"])
         return obj
-
