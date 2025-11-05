@@ -6,15 +6,19 @@ from .models import Time, Operation, OperationSetting, RequestReservation
 from .utils import send_reservation_sms
 from django.utils.translation import gettext_lazy as _
 from .forms import TimeAdminForm
-
+# for import export
+from import_export.admin import ExportMixin
+from .resources import TimeResources
 
 @admin.register(Time)
-class TimeAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
+class TimeAdmin(ExportMixin, ModelAdminJalaliMixin, admin.ModelAdmin):
+    resource_class = TimeResources
     form = TimeAdminForm
     list_display = (
     'id', 'trans_request_reservation_date', 'format_date', 'start_session', 'volume', 'unit', 'datetime_saved')
     search_fields = ('request_reservation__user__name', 'request_reservation__user__phone_number')
     ordering = ('-fix_reserved_date',)
+    list_filter = ('fix_reserved_date',)
     # autocomplete_fields = ('request_reservation',)
 
     # def has_view_permission(self, request, obj=None):
