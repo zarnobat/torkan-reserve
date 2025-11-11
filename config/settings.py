@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'accounts',
     'notifications',
     'article',
+    'warehouse',
 
     # 3-rd party app (overiden my app)
     'django_cleanup.apps.CleanupConfig',
