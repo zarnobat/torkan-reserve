@@ -47,8 +47,8 @@ class UserAdmin(ImportExportModelAdmin, BaseUserAdmin):
          ),
     )
 
-    def has_view_permission(self, request, obj=None):
-        return True
+    # def has_view_permission(self, request, obj=None):
+    #     return True
 
     @admin.display(description=_('datetime joined'))
     def date_joined_jalali(self, obj):
