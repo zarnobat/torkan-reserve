@@ -61,17 +61,30 @@ INSTALLED_APPS = [
     "ckeditor_uploader",
     'widget_tweaks',
     'import_export',
+    'rest_framework',
     # my app
     'home',
     'accounts',
     'notifications',
     'article',
     'warehouse',
+    'tasks',
 
     # 3-rd party app (overiden my app)
     'django_cleanup.apps.CleanupConfig',
     
 ]
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend"
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",  # فقط JSON
+        "rest_framework.renderers.BrowsableAPIRenderer",  #اینو حذف کن 
+    ],
+}
 
 
 # REDIS CONFIG

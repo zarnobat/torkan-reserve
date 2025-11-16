@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('home.urls')),
     path('accounts/', include('accounts.urls')),
     path('article/', include('article.urls')),
+    path('tasks/', include('tasks.urls')),
     # CKEditor
     path("ckeditor/", include("ckeditor_uploader.urls")),
 
