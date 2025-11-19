@@ -1,6 +1,8 @@
 {% load humanize %}
 {% load static %}
 {% load i18n %}
+{% load wagtailcore_tags %}
+{% load gallery_tags %}
 
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -39,7 +41,7 @@
                         <span class="hamburger-line"></span>
                     </div>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end mt-2 text-end">
+                    <ul class="dropdown-menu dropdown-menu-end mt-2 text-end" id="navbar-menu">
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'home' %}"> 
                             صفحه اصلی</a>
                         </li>
@@ -47,7 +49,17 @@
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url "about_us" %}">درباره ما</a></li>
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'contact_us' %}">ارتباط با ما</a></li>
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="#">مقالات</a></li>
-                        <!-- <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'gallery' %}">گالری تصاویر</a></li> -->
+                        <li class="dropdown dropdown-submenu dropdown-menu-end">
+                          <a class="dropdown-item dropdown-toggle border-bottom border-2 fw-bold">
+                              گالری تصاویر
+                          </a>
+                          <ul class="dropdown-menu sticky-top text-end">
+                            {% get_galleries as galleries %}
+                            {% for gallery in galleries %}
+                              <li><a class="dropdown-item" href="{{ gallery.url }}">{{ gallery.title }}</a></li>
+                            {% endfor %}
+                          </ul>
+                        </li>
                         <li><a class="dropdown-item fw-bold" href="{% url 'suggestion' %}">انتقادات و پیشنهادات</a></li>
                     </ul>
                 </div>
@@ -243,7 +255,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Navbar toggler animation
     const navbarToggler = document.getElementById('navbar-toggler-btn');
-    const dropdownMenu = document.querySelector('.dropdown-menu');
+    const dropdownMenu = document.getElementById('navbar-menu');
+
+    // Handle submenu toggles
+    document.querySelectorAll('.dropdown-submenu > a').forEach(function(element){
+        element.addEventListener('click', function(e){
+            let nextEl = this.nextElementSibling;
+            if(nextEl && nextEl.classList.contains('dropdown-menu')){
+                e.preventDefault();
+                nextEl.classList.toggle('show');
+            }
+        });
+    });
+
+    document.querySelectorAll('.dropdown-menu').forEach(function(menu){
+        menu.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    });
     
     if (navbarToggler && dropdownMenu) {
         // Listen for Bootstrap dropdown events
