@@ -72,6 +72,22 @@ INSTALLED_APPS = [
 
     # 3-rd party app (overiden my app)
     'django_cleanup.apps.CleanupConfig',
+
+    # Wagtail
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+
+    'modelcluster',
+    'taggit',
     
 ]
 
@@ -261,3 +277,6 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar", "silk"]
     MIDDLEWARE.insert(2, "debug_toolbar.middleware.DebugToolbarMiddleware")
     MIDDLEWARE.insert(3, 'silk.middleware.SilkyMiddleware')
+
+# Wagtail settings
+WAGTAIL_SITE_NAME = "Zarnobat"
