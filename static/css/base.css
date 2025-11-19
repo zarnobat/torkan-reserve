@@ -47,11 +47,19 @@
 
 
 .text-mod {
-    color: var(--text-color);
+    color: var(--text-color) !important;
+}
+
+.text-gold {
+    color: #d4af37 !important;
+}
+
+.text-silver {
+    color: #c0c0c0 !important;
 }
 
 .border-mod {
-    border-color: var(--border-color);
+    border-color: var(--border-color) !important;
 }
 
 body {
@@ -107,6 +115,14 @@ body {
     min-width: 30vw;
     background-color: var(--dropdown-menu-bg);
 }
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    right: 100%;
+    /* RTL */
+    margin-top: -1px;
+}
+
 
 .dropdown-item {
     padding: 0.85rem 1rem;
@@ -258,8 +274,8 @@ body {
 }
 
 .invalid-feedback p strong {
-    color: red ;
-    font-size: 0.85rem ;
+    color: red;
+    font-size: 0.85rem;
     font-weight: 600;
 }
 
