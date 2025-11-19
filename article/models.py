@@ -1,7 +1,13 @@
 from django.db import models
-from accounts.models import User
-from ckeditor_uploader.fields import RichTextUploadingField
-
+from wagtail.models import Page, Orderable
+from wagtail.fields import RichTextField
+from wagtail.admin.panels import FieldPanel, InlinePanel
+from modelcluster.fields import ParentalKey
+from wagtail.fields import StreamField
+from wagtail import blocks
+from wagtail.images.blocks import ImageChooserBlock
+from wagtail.images.models import Image
+from wagtail.snippets.models import register_snippet
 
 
 class Category(models.Model):
@@ -100,18 +106,29 @@ class Comment(models.Model):
 
 # Gallery
 
-class Gallery(models.Model):
-    
-    title = models.CharField(max_length=200, blank=True, verbose_name="عنوان")
-    description = models.TextField(blank=True, verbose_name="توضیحات")
-    image = models.ImageField(upload_to="gallery/%Y/%m/%d/", verbose_name="تصویر")
-    status = models.BooleanField(default=0, verbose_name="انتشار؟")
-    created_at = models.DateTimeField(auto_now_add=True , verbose_name='تاریخ ایجاد')
+class GalleryImage(Orderable):
+    page = ParentalKey(
+        "GalleryPage",
+        on_delete=models.CASCADE,
+        related_name="gallery_images"
+    )
+    image = models.ForeignKey(
+        Image,
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+    caption = models.CharField(
+        max_length=250, blank=True, verbose_name="عنوان تصویر")
+    panels = [
+        FieldPanel("image"),
+        FieldPanel("caption"),
+    ]
 
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = "عکس"
-        verbose_name_plural = "تصاویر"
 
-    def __str__(self):
-        return self.title or f"تصویر {self.id}"
+class GalleryPage(Page):
+    description = models.TextField(blank=True, verbose_name="توضیحات گالری")
+
+    content_panels = Page.content_panels + [
+        FieldPanel("description"),
+        InlinePanel("gallery_images", label="تصاویر گالری"),
+    ]
