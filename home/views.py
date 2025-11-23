@@ -13,7 +13,7 @@ from django.views.decorators.cache import never_cache
 
 
 def home(request):
-    return render(request, 'home/home.html')
+    return render(request, 'home/home_page.html')
 
 @never_cache
 @login_required

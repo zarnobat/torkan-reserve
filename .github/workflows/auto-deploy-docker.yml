@@ -23,7 +23,9 @@ jobs:
         port: ${{secrets.PORT}}
         script: |
           cd ${{secrets.PROJECT_PATH}}
-          docker-compose -f compose/docker-compose.prod.yml down
+          docker-compose -f compose/docker-compose.prod.yml down || true
+          docker rm -f redis-prod || true
+          docker rm -f db-prod || true
           git pull origin deployment
           docker-compose -f compose/docker-compose.prod.yml up -d --build
       

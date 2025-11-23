@@ -7,7 +7,13 @@ urlpatterns = [
     path("admin/", custom_admin_site.urls),
     path('', include('home.urls')),
     path('accounts/', include('accounts.urls')),
+    path('tasks/', include('tasks.urls')),
     path('article/', include('article.urls')),
+    path('laboratory/', include('laboratory.urls')),
+    # wagtail
+    path("cms/", include("wagtail.admin.urls")),
+    path("documents/", include("wagtail.documents.urls")),
+    path("", include("wagtail.urls")),
     # CKEditor
     path("ckeditor/", include("ckeditor_uploader.urls")),
 

@@ -1,0 +1,30 @@
+{% extends "_base.html" %}
+{% load wagtailimages_tags %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="rounded-1">
+        <div class="d-flex justify-content-center">
+            <h1 class="mt-4 text-gold">{{ page.title }}</h1>
+        </div>
+        <hr class="border border-1 border-warning"> </hr>
+        <div class="d-flex justify-content-start">
+            <p class="mb-4 mx-2 fs-6 text-silver">{{ page.description }}</p>
+        </div>
+    </div>
+    <div class="row m-3 g-1">
+    {% for img in page.gallery_images.all %}
+        <div class="col-sm-6 col-lg-4 col-12">
+            <div class="card glass-element rounded-1 p-1">
+                {% srcset_image img.image width-{300,400} height-{300,400} class="card-img-top rounded-bottom border border-1 border-warning" sizes="(max-width: 600px) 450px, 80vw" alt="None" %}
+                {% if img.caption %}
+                    <div class="card-body border border-1 border-warning rounded-2 mt-1 white-glass py-2 px-2">
+                        <p class="card-title form-text text-gold fs-6">{{ img.caption }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}

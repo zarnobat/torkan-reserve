@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from .models import CustomerProfile, StaffProfile, EmployeeTicketReply, EmployeeTicket, SupportTicket, TicketReply, Invoice, Payslip
-from .utils import customer_ticket, employee_ticket, answer_customer, answer_employee, invoice_customer, payslip_employee
+from .utils import customer_ticket, employee_ticket, answer_customer, answer_employee, invoice_customer, payslip_employee, welcome_sms
 import jdatetime
 from home.models import Time
 from home.utils import send_reservation_sms
@@ -143,3 +143,17 @@ def sms_fixed_reseve(sender, instance, created, **kwargs):
         print("$---- send fixed reservation time ----$\n")
     else:
         print("$---- Not send fixed reservation time ----$\n")
+
+
+@receiver(post_save, sender=User)
+def welcome(sender, instance, created, **kwargs):
+    if created:
+        date_joined = jdatetime.datetime.fromgregorian(
+            datetime=instance.date_joined
+        ).strftime("%Y/%m/%d")
+
+        welcome_sms(
+            instance.name,
+            date_joined,
+            instance.phone_number,
+        )
