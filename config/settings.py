@@ -270,6 +270,9 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 
 # DEBUG TOOLBAR & SILK CONFIG << DEBUGER >>
 if DEBUG:
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: not request.path.startswith('/cms/')
+    }
     import socket
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips]
