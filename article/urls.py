@@ -1,9 +1,7 @@
-from . import views
 from django.urls import path
-
+from . import views
 
 
 urlpatterns = [
-    path("article/<slug:slug>/", views.article_detail, name="article_list"),
-    path ('gallery/', views.gallery, name='gallery')
+    path('', views.article_list_view, name='article_list'),
 ]
