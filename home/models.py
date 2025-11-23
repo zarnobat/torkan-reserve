@@ -2,10 +2,21 @@ from django.db import models
 from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from wagtail.models import Page
+from wagtail.fields import RichTextField
+from wagtail.admin.panels import FieldPanel
 
 
 def default_reservation_date():
     return now().date()
+
+
+class HomePage(Page):
+    body = RichTextField(blank=True, verbose_name="محتوای صفحه اصلی")
+
+    content_panels = Page.content_panels + [
+        FieldPanel("body"),
+    ]
 
 
 class Operation(models.Model):
