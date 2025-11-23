@@ -1,0 +1,454 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لیست وظایف من</title>
+
+  <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+
+  <script src="https://cdn.tailwindcss.com/3.4.10"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', corePlugins: { preflight: true } }
+  </script>
+
+  <style>
+    [dir="rtl"] .border-l-custom { border-left-width: 6px; }
+  </style>
+
+  <script>
+    const CURRENT_USER_ID = {{ request.user.id|default:0 }};
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+  <div id="root"></div>
+  {% csrf_token %}
+
+{% verbatim %}
+<script type="text/babel">
+  const { useState, useEffect } = React;
+
+  const TASKS_URL = "/tasks/tasks/";
+  const CATEGORIES_URL = "/tasks/categories/";
+  const USERS_URL = "/tasks/tasks/users/";
+
+  const safeColor = (color) => color && /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color) ? color : "#9CA3AF";
+
+  const priorityMap = { low: { text: "کم", color: "bg-green-500" }, medium: { text: "متوسط", color: "bg-yellow-500" }, high: { text: "زیاد", color: "bg-red-500" } };
+  const statusMap = { todo: { text: "انجام نشده", color: "bg-gray-500" }, in_progress: { text: "در حال انجام", color: "bg-blue-500" }, done: { text: "انجام شده", color: "bg-green-500" }, cancelled: { text: "لغو شده", color: "bg-gray-600" } };
+  const statusOrder = ["todo", "in_progress", "done", "cancelled"];
+
+  function App() {
+    const [tasks, setTasks] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [darkMode, setDarkMode] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterMode, setFilterMode] = useState("all");
+    const [priorityFilter, setPriorityFilter] = useState("all"); // all | high | medium | low
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const [showTaskForm, setShowTaskForm] = useState(false);
+    const [currentTask, setCurrentTask] = useState(null);
+    const [taskForm, setTaskForm] = useState({ title: "", description: "", start_date: "", end_date: "", priority: "medium", status: "todo", category: "", assignee: CURRENT_USER_ID.toString() });
+
+    const [showCatForm, setShowCatForm] = useState(false);
+    const [currentCat, setCurrentCat] = useState(null);
+    const [catForm, setCatForm] = useState({ name: "", color: "#3B82F6" });
+
+    const today = new Date().toISOString().split("T")[0];
+
+    useEffect(() => {
+      fetchTasks();
+      fetchCategories();
+      fetchUsers();
+    }, []);
+
+    useEffect(() => {
+      document.documentElement.classList.toggle('dark', darkMode);
+    }, [darkMode] [darkMode]);
+
+    const getCsrfToken = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const commonFetch = (url, options = {}) => fetch(url, {
+      credentials: 'include',
+      ...options,
+      headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken(), ...options.headers }
+    });
+
+    const fetchTasks = async () => {
+      try {
+        const res = await commonFetch(TASKS_URL);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setTasks(Array.isArray(data) ? data : data.results || []);
+      } catch (e) { console.error(e); }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const res = await commonFetch(CATEGORIES_URL);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setCategories(Array.isArray(data) ? data : data.results || []);
+      } catch (e) { console.error(e); }
+    };
+
+    const fetchUsers = async () => {
+      try {
+        const res = await commonFetch(USERS_URL);
+        if (res.ok) setUsers(await res.json());
+      } catch (e) { console.error(e); }
+    };
+
+    const getUserName = (id) => {
+      if (!id) return "نامشخص";
+      if (id === CURRENT_USER_ID) return "من";
+      const user = users.find(u => u.id === id);
+      return user ? (user.name || user.email || `کاربر ${id}`) : `کاربر ${id}`;
+    };
+
+    const handleStatusChange = async (taskId, newStatus) => {
+      try {
+        const res = await commonFetch(`${TASKS_URL}${taskId}/set_status/`, { method: "POST", body: JSON.stringify({ status: newStatus }) });
+        if (res.ok) setTasks(prev => prev.map(t => t.id === taskId ? {...t, status: newStatus} : t));
+        else { const err = await res.text(); alert("خطا در تغییر وضعیت:\n" + err); fetchTasks(); }
+      } catch (e) { alert("خطا در ارتباط"); fetchTasks(); }
+    };
+
+    const onDragStart = (e, taskId) => e.dataTransfer.setData("taskId", taskId);
+    const onDragOver = (e) => e.preventDefault();
+    const onDrop = (e, newStatus) => {
+      e.preventDefault();
+      const taskId = parseInt(e.dataTransfer.getData("taskId"));
+      if (isNaN(taskId)) return;
+      const currentTask = tasks.find(t => t.id === taskId);
+      if (currentTask && currentTask.status !== newStatus) handleStatusChange(taskId, newStatus);
+    };
+
+    const saveTask = async () => {
+      if (!taskForm.title.trim()) return alert("عنوان الزامی است");
+      if (!taskForm.assignee) return alert("انجام‌دهنده الزامی است");
+
+      const url = currentTask ? `${TASKS_URL}${currentTask.id}/` : TASKS_URL;
+      const method = currentTask ? "PUT" : "POST";
+
+      const payload = {
+        title: taskForm.title.trim(),
+        description: taskForm.description || null,
+        start_date: taskForm.start_date || null,
+        end_date: taskForm.end_date || null,
+        priority: taskForm.priority,
+        status: taskForm.status,
+        category: taskForm.category ? parseInt(taskForm.category) : null,
+        assignee: parseInt(taskForm.assignee)
+      };
+
+      try {
+        const res = await commonFetch(url, { method, body: JSON.stringify(payload) });
+        if (res.ok) {
+          fetchTasks();
+          setShowTaskForm(false);
+          setCurrentTask(null);
+          setTaskForm({title:"", description:"", start_date:"", end_date:"", priority:"medium", status:"todo", category:"", assignee: CURRENT_USER_ID.toString()});
+        } else {
+          const err = await res.text();
+          alert("خطا:\n" + err);
+        }
+      } catch (e) { alert("خطای شبکه"); }
+    };
+
+    const saveCategory = async () => {
+      if (!catForm.name.trim()) return alert("نام دسته الزامی است");
+
+      const url = currentCat ? `${CATEGORIES_URL}${currentCat.id}/` : CATEGORIES_URL;
+      const method = currentCat ? "PUT" : "POST";
+
+      try {
+        const res = await commonFetch(url, {
+          method,
+          body: JSON.stringify({
+            name: catForm.name.trim(),
+            color: catForm.color
+          })
+        });
+
+        if (res.ok) {
+          fetchCategories();
+          setShowCatForm(false);
+          setCurrentCat(null);
+          setCatForm({ name: "", color: "#3B82F6" });
+        } else {
+          const err = await res.text();
+          alert("خطا در ذخیره دسته:\n" + err);
+        }
+      } catch (e) { alert("خطای شبکه"); }
+    };
+
+    const deleteTask = async (id) => {
+      if (!confirm("حذف وظیفه؟")) return;
+      await commonFetch(`${TASKS_URL}${id}/`, { method: "DELETE" });
+      fetchTasks();
+    };
+
+    const deleteCategory = async (id) => {
+      if (!confirm("دسته و تمام وظایف آن حذف شوند؟")) return;
+      await commonFetch(`${CATEGORIES_URL}${id}/`, { method: "DELETE" });
+      fetchCategories();
+      fetchTasks();
+    };
+
+    const openEditTask = (task) => {
+      setCurrentTask(task);
+      setTaskForm({
+        title: task.title,
+        description: task.description || "",
+        start_date: task.start_date || "",
+        end_date: task.end_date || "",
+        priority: task.priority,
+        status: task.status,
+        category: task.category ? task.category.id : "",
+        assignee: task.assignee.toString()
+      });
+      setShowTaskForm(true);
+    };
+
+    const filteredTasks = tasks.filter(task => {
+      const matchesCategory = selectedCategory === null || (task.category && task.category.id === selectedCategory);
+      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+
+      if (filterMode === "my") return matchesCategory && matchesSearch && matchesPriority && task.assignee === CURRENT_USER_ID;
+      if (filterMode === "today") return matchesCategory && matchesSearch && matchesPriority && task.is_today;
+      if (filterMode === "from_admin") return matchesCategory && matchesSearch && matchesPriority && task.creator !== CURRENT_USER_ID;
+      if (filterMode === "done") return matchesCategory && matchesSearch && matchesPriority && task.status === "done";
+      if (filterMode === "my_created") return matchesCategory && matchesSearch && matchesPriority && task.creator === CURRENT_USER_ID;
+
+      return matchesCategory && matchesSearch && matchesPriority;
+    });
+
+    return (
+      <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+        {/* سایدبار موبایل */}
+        <div className={`fixed inset-0 z-50 w-72 bg-white dark:bg-gray-800 shadow-xl transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static transition-transform duration-300 overflow-y-auto`}>
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">دسته‌بندی‌ها</h2>
+              <button onClick={() => { setCurrentCat(null); setCatForm({name: "", color: "#3B82F6"}); setShowCatForm(true); }} className="text-3xl text-blue-600 hover:scale-110 transition">+</button>
+              <button onClick={() => setSidebarOpen(false)} className="md:hidden text-3xl">×</button>
+            </div>
+            <button onClick={() => setSelectedCategory(null)} className={`w-full text-right py-3 px-4 rounded-lg mb-4 transition ${selectedCategory === null ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+              همه وظایف
+            </button>
+            {categories.map(cat => (
+              <div key={cat.id} className="flex items-center justify-between py-3 px-4 rounded-lg mb-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition" onClick={() => { setSelectedCategory(cat.id); setSidebarOpen(false); }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full" style={{ backgroundColor: safeColor(cat.color) }}></div>
+                  <span className="font-medium">{cat.name}</span>
+                </div>
+                <div className="flex gap-2 text-sm">
+                  <button onClick={(e) => { e.stopPropagation(); setCurrentCat(cat); setCatForm({name: cat.name, color: cat.color || "#3B82F6"}); setShowCatForm(true); }}>ویرایش</button>
+                  <button onClick={(e) => { e.stopPropagation(); deleteCategory(cat.id); }} className="text-red-600">حذف</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* محتوای اصلی */}
+        <div className="flex-1 flex flex-col">
+          {/* هدر موبایل */}
+          <div className="md:hidden bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center">
+            <button onClick={() => setSidebarOpen(true)} className="text-3xl">☰</button>
+            <h1 className="text-2xl font-bold">لیست وظایف</h1>
+            <button onClick={() => setDarkMode(d => !d)} className="text-2xl">{darkMode ? "☀️" : "🌙"}</button>
+          </div>
+
+          <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+            <div className="mb-8">
+              <h1 className="hidden md:block text-4xl font-bold mb-6">لیست وظایف من</h1>
+              <div className="flex flex-col gap-4">
+                <input type="text" placeholder="جستجو..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                       className="px-5 py-3 rounded-xl border bg-white dark:bg-gray-800 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+                <div className="flex flex-wrap gap-2">
+                  <select value={filterMode} onChange={e => setFilterMode(e.target.value)} className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+                    <option value="all">همه</option>
+                    <option value="my">وظایف من</option>
+                    <option value="today">وظایف امروز</option>
+                    <option value="from_admin">تسک‌های ادمین</option>
+                    <option value="done">وظایف انجام شده</option>
+                    <option value="my_created">وظایف تعریف شده توسط من</option>
+                  </select>
+
+                  <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+                    <option value="all">همه اولویت‌ها</option>
+                    <option value="high">زیاد</option>
+                    <option value="medium">متوسط</option>
+                    <option value="low">کم</option>
+                  </select>
+
+                  <button onClick={() => setDarkMode(d => !d)} className="hidden md:block text-3xl hover:scale-110 transition">
+                    {darkMode ? "☀️" : "🌙"}
+                  </button>
+
+                  <button onClick={() => { setCurrentTask(null); setTaskForm({title:"", description:"", start_date:"", end_date:"", priority:"medium", status:"todo", category:"", assignee: CURRENT_USER_ID.toString()}); setShowTaskForm(true); }} className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg">
+                    + وظیفه جدید
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {statusOrder.map(st => (
+                <div key={st} onDragOver={onDragOver} onDrop={(e) => onDrop(e, st)} className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 md:p-6 shadow-inner">
+                  <h3 className="font-bold text-lg mb-4 flex items-center justify-between">
+                    <span>{statusMap[st].text}</span>
+                    <span className={`text-white px-3 py-1 rounded-full text-xs font-bold ${statusMap[st].color}`}>
+                      {filteredTasks.filter(t => t.status === st).length}
+                    </span>
+                  </h3>
+                  <div className="space-y-4">
+                    {filteredTasks.filter(t => t.status === st).map(task => {
+                      const isOverdue = task.end_date && task.end_date < today && task.status !== "done" && task.status !== "cancelled";
+                      return (
+                        <div key={task.id}
+                             draggable
+                             onDragStart={(e) => onDragStart(e, task.id)}
+                             className="bg-white dark:bg-gray-700 rounded-xl shadow-lg p-5 border-l-custom hover:shadow-2xl transition cursor-move select-none"
+                             style={{ borderLeftColor: safeColor(task.category?.color) }}>
+                          <h4 className="font-bold text-lg mb-2">{task.title}</h4>
+                          {task.description && <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{task.description}</p>}
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            <span className={`text-white px-3 py-1 rounded-full text-xs font-medium ${priorityMap[task.priority].color}`}>
+                              {priorityMap[task.priority].text}
+                            </span>
+                            {task.is_today && <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs">امروز</span>}
+                            {isOverdue && <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs">عقب افتاده</span>}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            ایجادکننده: {getUserName(task.creator)} | انجام‌دهنده: {getUserName(task.assignee)}
+                          </div>
+                          <div className="flex gap-4 text-sm">
+                            <button onClick={() => openEditTask(task)} className="text-blue-600 font-medium hover:underline">ویرایش</button>
+                            <button onClick={() => deleteTask(task.id)} className="text-red-600 font-medium hover:underline">حذف</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* مودال‌ها - ریسپانسیو */}
+        {showTaskForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-4xl shadow-2xl my-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-8">{currentTask ? "ویرایش وظیفه" : "وظیفه جدید"}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block font-semibold mb-2">عنوان <span className="text-red-500">*</span></label>
+                  <input type="text" value={taskForm.title} onChange={e => setTaskForm({...taskForm, title: e.target.value})}
+                         className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500" required />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2">انجام‌دهنده <span className="text-red-500">*</span></label>
+                  <select value={taskForm.assignee} onChange={e => setTaskForm({...taskForm, assignee: e.target.value})}
+                          className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500">
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>{u.name || u.email} ({u.id})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block font-semibold mb-2">توضیحات</label>
+                  <textarea value={taskForm.description} onChange={e => setTaskForm({...taskForm, description: e.target.value})}
+                            className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700" rows="3"></textarea>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2">تاریخ شروع</label>
+                  <input type="date" value={taskForm.start_date} onChange={e => setTaskForm({...taskForm, start_date: e.target.value})}
+                         className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2">تاریخ پایان</label>
+                  <input type="date" value={taskForm.end_date} onChange={e => setTaskForm({...taskForm, end_date: e.target.value})}
+                         className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2">اولویت</label>
+                  <select value={taskForm.priority} onChange={e => setTaskForm({...taskForm, priority: e.target.value})}
+                          className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700">
+                    <option value="low">کم</option>
+                    <option value="medium">متوسط</option>
+                    <option value="high">زیاد</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2">وضعیت</label>
+                  <select value={taskForm.status} onChange={e => setTaskForm({...taskForm, status: e.target.value})}
+                          className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700">
+                    <option value="todo">انجام نشده</option>
+                    <option value="in_progress">در حال انجام</option>
+                    <option value="done">انجام شده</option>
+                    <option value="cancelled">لغو شده</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block font-semibold mb-2">دسته‌بندی</label>
+                  <select value={taskForm.category} onChange={e => setTaskForm({...taskForm, category: e.target.value})}
+                          className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700">
+                    <option value="">بدون دسته</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 mt-8">
+                <button onClick={() => setShowTaskForm(false)} className="px-6 py-3 border rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700">لغو</button>
+                <button onClick={saveTask} className="bg-blue-600 text-white px-10 py-3 rounded-xl hover:bg-blue-700 shadow-lg">ذخیره</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCatForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-2xl my-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-8">{currentCat ? "ویرایش دسته" : "دسته جدید"}</h2>
+              <div className="space-y-8">
+                <div>
+                  <label className="block font-semibold mb-2">نام دسته <span className="text-red-500">*</span></label>
+                  <input type="text" value={catForm.name} onChange={e => setCatForm({...catForm, name: e.target.value})}
+                         className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500" required />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2">رنگ</label>
+                  <input type="color" value={catForm.color} onChange={e => setCatForm({...catForm, color: e.target.value})}
+                         className="w-full h-16 rounded-xl cursor-pointer" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 mt-8">
+                <button onClick={() => setShowCatForm(false)} className="px-6 py-3 border rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700">لغو</button>
+                <button onClick={saveCategory} className="bg-blue-600 text-white px-10 py-3 rounded-xl hover:bg-blue-700 shadow-lg">ذخیره</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+{% endverbatim %}
+</body>
+</html>

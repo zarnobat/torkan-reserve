@@ -61,17 +61,47 @@ INSTALLED_APPS = [
     "ckeditor_uploader",
     'widget_tweaks',
     'import_export',
+    'rest_framework',
     # my app
     'home',
     'accounts',
     'notifications',
     'article',
     'warehouse',
+    'tasks',
+    'laboratory',
 
     # 3-rd party app (overiden my app)
     'django_cleanup.apps.CleanupConfig',
+
+    # Wagtail
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+
+    'modelcluster',
+    'taggit',
     
 ]
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend"
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",  # فقط JSON
+        "rest_framework.renderers.BrowsableAPIRenderer",  #اینو حذف کن 
+    ],
+}
 
 
 # REDIS CONFIG
@@ -241,6 +271,9 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 
 # DEBUG TOOLBAR & SILK CONFIG << DEBUGER >>
 if DEBUG:
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: not request.path.startswith('/cms/')
+    }
     import socket
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips]
@@ -248,3 +281,6 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar", "silk"]
     MIDDLEWARE.insert(2, "debug_toolbar.middleware.DebugToolbarMiddleware")
     MIDDLEWARE.insert(3, 'silk.middleware.SilkyMiddleware')
+
+# Wagtail settings
+WAGTAIL_SITE_NAME = "Zarnobat"
