@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'article',
     'warehouse',
     'tasks',
+    'laboratory',
 
     # 3-rd party app (overiden my app)
     'django_cleanup.apps.CleanupConfig',
