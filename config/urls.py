@@ -8,10 +8,11 @@ urlpatterns = [
     path('', include('home.urls')),
     path('accounts/', include('accounts.urls')),
     path('tasks/', include('tasks.urls')),
+    path('article/', include('article.urls')),
     # wagtail
     path("cms/", include("wagtail.admin.urls")),
     path("documents/", include("wagtail.documents.urls")),
-    path("wagtail/", include("wagtail.urls")),
+    path("", include("wagtail.urls")),
     # CKEditor
     path("ckeditor/", include("ckeditor_uploader.urls")),
 
