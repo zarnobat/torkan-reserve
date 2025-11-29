@@ -13,7 +13,6 @@ urlpatterns = [
     # wagtail
     path("cms/", include("wagtail.admin.urls")),
     path("documents/", include("wagtail.documents.urls")),
-    path("", include("wagtail.urls")),
     # CKEditor
     path("ckeditor/", include("ckeditor_uploader.urls")),
 
@@ -26,3 +25,7 @@ if settings.DEBUG:
         # Rosetta (i18n)
         path('rosetta/', include('rosetta.urls')),
     ]
+
+urlpatterns += [
+    path("", include("wagtail.urls")),
+]
