@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -6,9 +7,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لیست وظایف من</title>
 
+  <!-- React -->
   <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
   <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
-  <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+
+  <!-- Babel -->
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+
+  <!-- Jalali Datepicker -->
+  <link href="{% static 'admin/css/django_jalali.min.css' %}" rel="stylesheet">
+  <script src="{% static 'admin/js/django_jalali.min.js' %}" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
 
   <script src="https://cdn.tailwindcss.com/3.4.10"></script>
   <script>
@@ -18,18 +27,87 @@
   <style>
     [dir="rtl"] .border-l-custom { border-left-width: 6px; }
   </style>
-
   <script>
-    const CURRENT_USER_ID = {{ request.user.id|default:0 }};
+    function jalaliToGregorian(jy, jm, jd) {
+      jy = parseInt(jy) - 979;
+      jm = parseInt(jm) - 1;
+      jd = parseInt(jd) - 1;
+
+      var j_day_no = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor(((jy % 33) + 3) / 4);
+      for (var i = 0; i < jm; ++i)
+        j_day_no += [31,31,31,31,31,31,30,30,30,30,30,29][i];
+      j_day_no += jd;
+
+      var g_day_no = j_day_no + 79;
+
+      var gy = 1600 + 400 * Math.floor(g_day_no / 146097);
+      g_day_no %= 146097;
+
+      var leap = true;
+      if (g_day_no >= 36525) {
+        g_day_no--;
+        gy += 100 * Math.floor(g_day_no / 36524);
+        g_day_no %= 36524;
+
+        if (g_day_no >= 365)
+          g_day_no++;
+        else
+          leap = false;
+      }
+
+      gy += 4 * Math.floor(g_day_no / 1461);
+      g_day_no %= 1461;
+
+      if (g_day_no >= 366) {
+        leap = false;
+        g_day_no--;
+        gy += Math.floor(g_day_no / 365);
+        g_day_no %= 365;
+      }
+
+      var gm, gd;
+      var g_month_days = [31, (leap ? 29 : 28),31,30,31,30,31,31,30,31,30,31];
+
+      for (gm = 0; gm < 12 && g_day_no >= g_month_days[gm]; gm++)
+        g_day_no -= g_month_days[gm];
+
+      gd = g_day_no + 1;
+      return `${gy}-${String(gm+1).padStart(2,'0')}-${String(gd).padStart(2,'0')}`;
+    }
+
+    function convertInputs() {
+      document.querySelectorAll("input[data-jdate]").forEach(input => {
+        let val = input.value;
+        if (!val) return;
+
+        const parts = val.split("/");
+        if (parts.length !== 3) return;
+
+        const [jy, jm, jd] = parts;
+        const greg = jalaliToGregorian(jy, jm, jd);
+
+        console.log("Jalali:", val, "→ Gregorian:", greg);
+        input.dataset.original = val;
+        input.value = greg;
+      });
+    }
+
+    document.addEventListener("change", convertInputs);
   </script>
+  <script>
+    const CURRENT_USER_ID = {{ request.user.id }};
+  </script>
+
+
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
   <div id="root"></div>
   {% csrf_token %}
 
 {% verbatim %}
 <script type="text/babel">
-  const { useState, useEffect } = React;
+  const { useState, useEffect, useRef } = React;
 
   const TASKS_URL = "/tasks/tasks/";
   const CATEGORIES_URL = "/tasks/categories/";
@@ -40,6 +118,189 @@
   const priorityMap = { low: { text: "کم", color: "bg-green-500" }, medium: { text: "متوسط", color: "bg-yellow-500" }, high: { text: "زیاد", color: "bg-red-500" } };
   const statusMap = { todo: { text: "انجام نشده", color: "bg-gray-500" }, in_progress: { text: "در حال انجام", color: "bg-blue-500" }, done: { text: "انجام شده", color: "bg-green-500" }, cancelled: { text: "لغو شده", color: "bg-gray-600" } };
   const statusOrder = ["todo", "in_progress", "done", "cancelled"];
+
+  const pad = (num) => (typeof num === "number" && !Number.isNaN(num) ? num.toString().padStart(2, "0") : "");
+  const normalizeDigits = (str = "") => str
+    .replace(/[\u200c\u200f\u202a-\u202e]/g, "")
+    .replace(/[۰-۹]/g, d => String.fromCharCode(d.charCodeAt(0) - 1728))
+    .replace(/[٬٫]/g, ",");
+
+  const jalaliPattern = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/;
+
+  const convertGregToJalali = (gregDate) => {
+    if (!gregDate) return "";
+    const [gy, gm, gd] = gregDate.split("/").map(Number);
+    if ([gy, gm, gd].some(n => Number.isNaN(n))) return gregDate;
+
+    if (window?.jalaali?.toJalaali) {
+      const { jy, jm, jd } = window.jalaali.toJalaali(gy, gm, gd);
+      return `${jy}/${pad(jm)}/${pad(jd)}`;
+    }
+
+    return gregDate;
+  };
+
+  const convertJalaliToGreg = (jalaliDate) => {
+    if (!jalaliDate) return "";
+    const s = normalizeDigits(String(jalaliDate)).replace(/[-.]/g, "/").trim();
+    const m = s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+    if (!m) {
+      console.warn("convertJalaliToGreg: not a jalali-looking string:", jalaliDate);
+      return "";
+    }
+    const jy = parseInt(m[1], 10);
+    const jm = parseInt(m[2], 10);
+    const jd = parseInt(m[3], 10);
+
+    if (Number.isNaN(jy) || Number.isNaN(jm) || Number.isNaN(jd)) {
+      console.warn("convertJalaliToGreg: parse failed:", jalaliDate);
+      return "";
+    }
+
+    if (window?.jalaali?.toGregorian && typeof window.jalaali.toGregorian === "function") {
+      const { gy, gm, gd } = window.jalaali.toGregorian(jy, jm, jd);
+      const out = `${gy}-${pad(gm)}-${pad(gd)}`;
+      console.debug("[convertJalaliToGreg] in:", jalaliDate, "->", out, "(via jalaali-js)");
+      return out;
+    }
+
+    try {
+      const out = `${gy}-${pad(gm)}-${pad(gd)}`;
+      console.debug("[convertJalaliToGreg] in:", jalaliDate, "->", out, "(via manual)");
+      return out;
+    } catch (err) {
+      console.error("convertJalaliToGreg failed:", err, jalaliDate);
+      return "";
+    }
+  };
+
+
+  const ensureGregorianDate = (value) => {
+    if (!value) return null;
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+    const converted = convertJalaliToGreg(trimmed);
+    return converted || null;
+  };
+
+  function JalaliDateInput({ label, value, onChange, name }) {
+  const inputRef = useRef(null);
+  const lastValueRef = useRef("");
+  const [displayValue, setDisplayValue] = useState(convertGregToJalali(value));
+
+  // helper patterns
+  const gregPattern = /^\d{4}-\d{1,2}-\d{1,2}$/;
+  const jalaliPatternLocal = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/;
+
+  const applyValue = React.useCallback((rawValue) => {
+    if (rawValue == null) return;
+    // cleanup common rubbish and convert persian digits to latin
+    const cleanedDigits = normalizeDigits(String(rawValue)).trim();
+    // if it looks like ISO Gregorian (2025-11-27) -> accept as Gregorian
+    if (gregPattern.test(cleanedDigits)) {
+      // ensure zero-padded
+      const [gy, gm, gd] = cleanedDigits.split("-").map(n => pad(Number(n)));
+      const canonicalGreg = `${gy}-${gm}-${gd}`;
+      // set display as corresponding Jalali
+      const jal = convertGregToJalali(canonicalGreg);
+      lastValueRef.current = jal;
+      setDisplayValue(jal);
+      onChange(canonicalGreg); // send greg to parent (API-ready)
+      return;
+    }
+
+    // normalize separators for jalali detection
+    const s = cleanedDigits.replace(/\./g, "/").replace(/\s+/g, "/").replace(/[-]/g, "/");
+    // If user typed day-first like "01/09/1404" reorder to YYYY/MM/DD for parsing
+    const m = s.match(jalaliPatternLocal);
+    if (m) {
+      // standardize jalali display as YYYY/MM/DD (pad)
+      const jy = String(m[1]);
+      const jm = pad(Number(m[2]));
+      const jd = pad(Number(m[3]));
+      const canonicalJal = `${jy}/${jm}/${jd}`;
+      lastValueRef.current = canonicalJal;
+      setDisplayValue(canonicalJal);
+      // convert to gregorian and send to parent
+      const greg = convertJalaliToGreg(canonicalJal);
+      if (greg) onChange(greg);
+      else onChange("");
+      return;
+    }
+
+    // empty or unrecognized -> clear
+    if (cleanedDigits === "") {
+      lastValueRef.current = "";
+      setDisplayValue("");
+      onChange("");
+    } else {
+      // keep raw as typed but don't send to parent until valid
+      lastValueRef.current = cleanedDigits;
+      setDisplayValue(cleanedDigits);
+    }
+  }, [onChange]);
+
+  // Sync when parent value (greg) changes
+  useEffect(() => {
+    const nextVal = convertGregToJalali(value);
+    lastValueRef.current = nextVal;
+    setDisplayValue(nextVal);
+  }, [value]);
+
+  // attach listeners once
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+
+    const onInput = (e) => {
+      const shown = normalizeDigits(el.value || "");
+      setDisplayValue(shown);
+    };
+
+    const onGregEvent = (ev) => {
+      const greg = ev.detail?.greg;
+      if (greg) {
+        // set state in react (this calls parent's onChange via prop)
+        setDisplayValue(convertGregToJalali(greg));
+        onChange(greg);
+      }
+    };
+
+    el.addEventListener('input', onInput);
+    el.addEventListener('jalali:greg', onGregEvent);
+
+    return () => {
+      el.removeEventListener('input', onInput);
+      el.removeEventListener('change', onInput);
+      el.removeEventListener('jalali:greg', onGregEvent);
+    };
+  }, [onChange]);
+
+
+  const handleChange = (e) => applyValue(e.target.value);
+
+  return (
+    <div>
+      <label className="block font-semibold mb-2">{label}</label>
+      <input
+        type="text"
+        data-jdp
+        data-jdp-only-date="true"
+        data-field-name={name}
+        id={`jalali-${name}`}
+        ref={inputRef}
+        value={displayValue}
+        onChange={handleChange}
+        className="jalali-date-input w-full border rounded-xl px-4 py-3 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
+        placeholder="مثال: 1403/01/15"
+        dir="rtl"
+        inputMode="numeric"
+        autoComplete="off"
+      />
+    </div>
+  );
+}
+
 
   function App() {
     const [tasks, setTasks] = useState([]);
@@ -70,7 +331,60 @@
 
     useEffect(() => {
       document.documentElement.classList.toggle('dark', darkMode);
-    }, [darkMode] [darkMode]);
+    }, [darkMode]);
+
+    useEffect(() => {
+      if (!showTaskForm) return;
+      const init = () => {
+        if (!window?.jalaliDatepicker) return;
+        try {
+          window.jalaliDatepicker.startWatch({
+            selector: ".jalali-date-input",
+            autoSubmit: true,
+            time: false,
+            showTodayBtn: true,
+            changeMonth: true,
+            changeYear: true,
+            observer: true,
+            select: function(value, inputEl) {
+              try {
+                console.debug("[jalali select] raw value from datepicker:", value);
+                if (inputEl && inputEl.value !== value) {
+                  inputEl.value = value;
+                  inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                  inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              
+                const fieldName = inputEl?.getAttribute('data-field-name') || inputEl?.id || null;
+              
+                // convert
+                const greg = convertJalaliToGreg(value);
+                console.debug(`[jalali select] field=${fieldName} jalali=${value} -> greg=${greg}`);
+              
+                if (greg) {
+                  inputEl?.dispatchEvent(new CustomEvent('jalali:greg', { detail: { greg } , bubbles:true }));
+                } else {
+                  console.warn("[jalali select] conversion returned empty for", value);
+                }
+              } catch (err) {
+                console.error('jalali select handler error', err);
+              }
+          }
+
+          });
+        } catch (e) {
+          console.error('jalaliDatepicker startWatch failed', e);
+        }
+      };
+      const t = setTimeout(init, 0);
+      return () => {
+        clearTimeout(t);
+        if (window?.jalaliDatepicker?.updateOptions) {
+          try { window.jalaliDatepicker.updateOptions({ selector: null }); } catch(e) {}
+        }
+      };
+    }, [showTaskForm]);
+
 
     const getCsrfToken = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -134,14 +448,27 @@
       if (!taskForm.title.trim()) return alert("عنوان الزامی است");
       if (!taskForm.assignee) return alert("انجام‌دهنده الزامی است");
 
+      const domStart = document.getElementById("jalali-start_date")?.value || "";
+      const domEnd = document.getElementById("jalali-end_date")?.value || "";
+
+      const normalizedStart = ensureGregorianDate(taskForm.start_date || domStart);
+      const normalizedEnd = ensureGregorianDate(taskForm.end_date || domEnd);
+
+      if (taskForm.start_date && !normalizedStart) {
+        return alert("فرمت تاریخ شروع نامعتبر است");
+      }
+      if (taskForm.end_date && !normalizedEnd) {
+        return alert("فرمت تاریخ پایان نامعتبر است");
+      }
+
       const url = currentTask ? `${TASKS_URL}${currentTask.id}/` : TASKS_URL;
       const method = currentTask ? "PUT" : "POST";
 
       const payload = {
         title: taskForm.title.trim(),
         description: taskForm.description || null,
-        start_date: taskForm.start_date || null,
-        end_date: taskForm.end_date || null,
+        start_date: normalizedStart,
+        end_date: normalizedEnd,
         priority: taskForm.priority,
         status: taskForm.status,
         category: taskForm.category ? parseInt(taskForm.category) : null,
@@ -372,16 +699,18 @@
                   <textarea value={taskForm.description} onChange={e => setTaskForm({...taskForm, description: e.target.value})}
                             className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700" rows="3"></textarea>
                 </div>
-                <div>
-                  <label className="block font-semibold mb-2">تاریخ شروع</label>
-                  <input type="date" value={taskForm.start_date} onChange={e => setTaskForm({...taskForm, start_date: e.target.value})}
-                         className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700" />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-2">تاریخ پایان</label>
-                  <input type="date" value={taskForm.end_date} onChange={e => setTaskForm({...taskForm, end_date: e.target.value})}
-                         className="w-full border rounded-xl px-4 py-3 dark:bg-gray-700" />
-                </div>
+                <JalaliDateInput
+                  label="تاریخ شروع"
+                  value={taskForm.start_date}
+                  onChange={(val) => setTaskForm(prev => ({...prev, start_date: val || ""}))}
+                  name="start_date"
+                />
+                <JalaliDateInput
+                  label="تاریخ پایان"
+                  value={taskForm.end_date}
+                  onChange={(val) => setTaskForm(prev => ({...prev, end_date: val || ""}))}
+                  name="end_date"
+                />
                 <div>
                   <label className="block font-semibold mb-2">اولویت</label>
                   <select value={taskForm.priority} onChange={e => setTaskForm({...taskForm, priority: e.target.value})}
