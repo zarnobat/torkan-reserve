@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from django.contrib.messages import constants
 from pathlib import Path
 from environs import Env
 import os
@@ -30,7 +31,8 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", True)
 
-ALLOWED_HOSTS = ["zarnobat.ir", "www.zarnobat.ir", "127.0.0.1", "localhost", "87.107.165.146"]
+ALLOWED_HOSTS = ["zarnobat.ir", "www.zarnobat.ir",
+                 "127.0.0.1", "localhost", "87.107.165.146"]
 CSRF_TRUSTED_ORIGINS = ["https://zarnobat.ir", "https://www.zarnobat.ir"]
 
 AUTHENTICATION_BACKENDS = [
@@ -89,7 +91,7 @@ INSTALLED_APPS = [
 
     'modelcluster',
     'taggit',
-    
+
 ]
 
 
@@ -99,7 +101,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",  # فقط JSON
-        "rest_framework.renderers.BrowsableAPIRenderer",  #اینو حذف کن 
+        "rest_framework.renderers.BrowsableAPIRenderer",  # اینو حذف کن
     ],
 }
 
@@ -116,7 +118,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-#CKEDITOR CONFIG
+# CKEDITOR CONFIG
 CKEDITOR_CONFIGS = {
     "default": {
         "toolbar": "full",
@@ -124,7 +126,6 @@ CKEDITOR_CONFIGS = {
         "width": "100%",
     },
 }
-
 
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -145,15 +146,12 @@ MIDDLEWARE = [
 ]
 
 
-
-
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -253,7 +251,6 @@ LOCALE_PATHS = [
     BASE_DIR / "locale",
 ]
 # For messages framework
-from django.contrib.messages import constants
 
 MESSAGE_TAGS = {
     constants.ERROR: 'danger',
@@ -274,9 +271,9 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'SHOW_TOOLBAR_CALLBACK': lambda request: not request.path.startswith('/cms/')
     }
-    import socket
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips]
+    INTERNAL_IPS = ['127.0.0.1',
+                    'localhost',
+                    '0.0.0.0',]
 
     INSTALLED_APPS += ["debug_toolbar", "silk"]
     MIDDLEWARE.insert(2, "debug_toolbar.middleware.DebugToolbarMiddleware")
