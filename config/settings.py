@@ -281,3 +281,4 @@ if DEBUG:
 
 # Wagtail settings
 WAGTAIL_SITE_NAME = "Zarnobat"
+WAGTAIL_ALLOW_UNICODE_SLUGS = True

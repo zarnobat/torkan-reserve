@@ -1,6 +1,12 @@
 {% extends '_base.html' %}
 {% load wagtailimages_tags %}
 {% load wagtailcore_tags%}
+{% load jalali_tags %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/article.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -9,33 +15,61 @@
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="50" viewBox="0 0 32 32">
                 <linearGradient id="7D8MzI_5kKL1oTvHfYh1Ga_n51Ocs3tSUsv_gr1" x1="2.129" x2="10.457" y1="16.043" y2="24.371" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2680ff" stop-opacity=".95"></stop><stop offset="1" stop-color="#2680ff" stop-opacity=".5"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Ga_n51Ocs3tSUsv_gr1)" d="M8,26V13H6c-1.105,0-2,0.895-2,2v11c0,1.105,0.895,2,2,2S8,27.105,8,26z"></path><linearGradient id="7D8MzI_5kKL1oTvHfYh1Gb_n51Ocs3tSUsv_gr2" x1="6.939" x2="27.182" y1="6.818" y2="27.061" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00e9ff" stop-opacity=".95"></stop><stop offset="1" stop-color="#00e9ff" stop-opacity=".5"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Gb_n51Ocs3tSUsv_gr2)" d="M25,4H11C9.343,4,8,5.343,8,7v19 c0,1.105-0.895,2-2,2h19c1.657,0,3-1.343,3-3V7C28,5.343,26.657,4,25,4z"></path><linearGradient id="7D8MzI_5kKL1oTvHfYh1Gc_n51Ocs3tSUsv_gr3" x1="6.732" x2="26.975" y1="7.025" y2="27.268" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".6"></stop><stop offset=".493" stop-color="#fff" stop-opacity="0"></stop><stop offset=".997" stop-color="#fff" stop-opacity=".3"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Gc_n51Ocs3tSUsv_gr3)" d="M25,4.5c1.378,0,2.5,1.122,2.5,2.5v18 c0,1.378-1.122,2.5-2.5,2.5H6c-0.827,0-1.5-0.673-1.5-1.5V15c0-0.827,0.673-1.5,1.5-1.5h2h0.5V13V7c0-1.378,1.121-2.5,2.5-2.5H25 M25,4H11C9.343,4,8,5.343,8,7v6H6c-1.105,0-2,0.895-2,2v11c0,1.105,0.895,2,2,2h19c1.657,0,3-1.343,3-3V7 C28,5.343,26.657,4,25,4L25,4z"></path><linearGradient id="7D8MzI_5kKL1oTvHfYh1Gd_n51Ocs3tSUsv_gr4" x1="11.293" x2="16.707" y1="17.293" y2="22.707" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".8"></stop><stop offset=".519" stop-color="#fff" stop-opacity=".5"></stop><stop offset="1" stop-color="#fff" stop-opacity=".6"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Gd_n51Ocs3tSUsv_gr4)" d="M16,23h-4c-0.552,0-1-0.448-1-1v-4 c0-0.552,0.448-1,1-1h4c0.552,0,1,0.448,1,1v4C17,22.552,16.552,23,16,23z"></path><linearGradient id="7D8MzI_5kKL1oTvHfYh1Ge_n51Ocs3tSUsv_gr5" x1="20.293" x2="23.707" y1="16.293" y2="19.707" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".8"></stop><stop offset=".519" stop-color="#fff" stop-opacity=".5"></stop><stop offset="1" stop-color="#fff" stop-opacity=".6"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Ge_n51Ocs3tSUsv_gr5)" d="M24,19h-4c-0.552,0-1-0.448-1-1v0 c0-0.552,0.448-1,1-1h4c0.552,0,1,0.448,1,1v0C25,18.552,24.552,19,24,19z"></path><linearGradient id="7D8MzI_5kKL1oTvHfYh1Gf_n51Ocs3tSUsv_gr6" x1="14.293" x2="21.707" y1="6.293" y2="13.707" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".8"></stop><stop offset=".519" stop-color="#fff" stop-opacity=".5"></stop><stop offset="1" stop-color="#fff" stop-opacity=".6"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Gf_n51Ocs3tSUsv_gr6)" d="M24,11H12c-0.552,0-1-0.448-1-1v0 c0-0.552,0.448-1,1-1h12c0.552,0,1,0.448,1,1v0C25,10.552,24.552,11,24,11z"></path><linearGradient id="7D8MzI_5kKL1oTvHfYh1Gg_n51Ocs3tSUsv_gr7" x1="14.293" x2="21.707" y1="10.293" y2="17.707" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".8"></stop><stop offset=".519" stop-color="#fff" stop-opacity=".5"></stop><stop offset="1" stop-color="#fff" stop-opacity=".6"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Gg_n51Ocs3tSUsv_gr7)" d="M24,15H12c-0.552,0-1-0.448-1-1v0 c0-0.552,0.448-1,1-1h12c0.552,0,1,0.448,1,1v0C25,14.552,24.552,15,24,15z"></path><linearGradient id="7D8MzI_5kKL1oTvHfYh1Gh_n51Ocs3tSUsv_gr8" x1="20.293" x2="23.707" y1="20.293" y2="23.707" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".8"></stop><stop offset=".519" stop-color="#fff" stop-opacity=".5"></stop><stop offset="1" stop-color="#fff" stop-opacity=".6"></stop></linearGradient><path fill="url(#7D8MzI_5kKL1oTvHfYh1Gh_n51Ocs3tSUsv_gr8)" d="M24,23h-4c-0.552,0-1-0.448-1-1v0 c0-0.552,0.448-1,1-1h4c0.552,0,1,0.448,1,1v0C25,22.552,24.552,23,24,23z"></path>
             </svg>
-            <h1 class="mt-4 text-gold">مقاله‌ها</h1>
+            <h1 class="mt-4 text-gold">
+                {% if category %}
+                    {{ category.name }}
+                {% else %}
+                    مقاله‌ها
+                {% endif %}
+            </h1>
         </div>
         <hr class="border border-1 border-warning"> </hr>
     </div>
     <div class="row">
-        <div class="col-12 col-sm-8 pe-4">
-            <div class="row mb-4 py-4 g-3">
+        <div class="col-12 col-md-8 col-sm-7 pe-4">
+            <div class="row mb-4 g-1">
                 {% for article in articles%}
-                    <div class="col-6">
+                    <div class="col-md-6 col-12">
                         <div class="card glass-element rounded-1 border border-1 border-warning">
                             <a href="{{ article.url }}">
                                 {% srcset_image article.image height-{300,400} style="height:200px;" class="card-img-top" alt="article.image.caption" %}
                             </a>
-                            <div class="card-body">
-                                <a href="{{ article.url }}" class="text-decoration-none d-flex align-items-center">
-                                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADSElEQVR4nO3Wb09TVxzA8ZK9lnvIMgNs4J8BE6fOMUccZBvLssXEZPPpEpM9msk5ElpvQVpqC1KLUKQjDmydbvxxrCJqVDphBapF0g2nFRQh7B18l7vFxAe255Lgo3HewOd77+/ek5/DsXk2z0vOp/285hzGPBIldTjC6tcR1g71snKwh+Uvu3nyWReP60M8qgvy4KMO/qhpY746QHqvj9SuVpKVLUyVN5EoM7lWZtJT6qbWAQW28YZBxnZ6+NuQrAjFU0OxKCRZofjLUPwpJBlDcV8o7glJylBMC8mUofhNKCaE5KahuC4U44bkSuExRgsV39mKcA5jbiQuFKNCcblQMVTiYr824Mh5ZjcaNyRDQvFTsROfNuCrXlZfBW4oLhY1MqANOHSWtfXibzRwy/MrmYZB0rlwIYmVmsS0AQfDrKwHL3FyO5bk8fQj1kZSLObChWJgq5uoNuCLbpbt4lvdTAzOsmTh8fssVQe4kQs3FD9sd9sYwednWLKDV5wgEZ/jqYVfvsviu61cy4cLSd/bzZzTBtR3ktXhu73cuZ7hmYX/PEO2vJmrOtxQ9FZ46NMGfHyah/nwmjamEgusWvj5KR6Wmf9+dFpcHCNc5eF7bUBtkIV8v1p8jmULjyRYKHYSt4sLSdcuL73agJp2Mvn+85F7LE084FnXLTJFjYzaxQ1FaG8rPdqADwLM57tkqgPcHEqRjafJhm6QfsvFkB1cSDr2nSSsDXjPT1p3w73j4UokwXz0dzKBcWa2u7mkww1J+/4AXdqAPT5m7Vyv20yGfWNM999hruc2M1VefsyHC4X/QDud2oAqL0m7d3uJk4uBq0xeSDLXP8nsPj/RXLiQtB44RUgbUNnCpB38+cy3NDIQGCMxfJd0LEkyF25IPHVBgtqAHW4SdvHnM3+9gYhzhLGjl/glFy4UzZ+EOKUNKDMZXw+eb+Yv4obErO/Erw0oPU74VeBC4jrch9QHuKm1driNxitO0HT0go2VzAEF1gJp7XAbiX8b4xuHw+Zm7IACa4EsbuRkkYuBN13ESo8T3WbSv6OJc+XN9FW2ENnp5exuH+E9Prrf93PmwzZCNW2cru2goy5IuzVz67X/9+R28c3zfzv/AA6pfy3PIJl1AAAAAElFTkSuQmCC" alt="left-squared">
-                                    <h5 class="card-title fw-bold text-mod pt-1 px-2">{{ article.title }}</h5>
+                            <div class="card-body pt-1 px-2">
+                                <div class="d-flex align-items-start justify-content-end">
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="#ff4757">
+                                            <path d="M23 4c-3.866 0-7 3.134-7 7 0-3.866-3.134-7-7-7s-7 3.134-7 7c0 9.333 14 17 14 17s14-7.667 14-17c0-3.866-3.134-7-7-7z"/>
+                                        </svg>
+                                        <span class="me-1 text-silver" style="font-size: 0.85rem !important;">{{ article.likes.all.count }}</span>
+                                    </div>
+                                    <div class="me-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+                                            <path d="M2.5 2C1.675781 2 1 2.675781 1 3.5L1 11.5C1 12.324219 1.675781 13 2.5 13L4 13L4 15.433594L7.652344 13L12.5 13C13.324219 13 14 12.324219 14 11.5L14 3.5C14 2.675781 13.324219 2 12.5 2 Z M 2.5 3L12.5 3C12.78125 3 13 3.21875 13 3.5L13 11.5C13 11.78125 12.78125 12 12.5 12L7.347656 12L5 13.566406L5 12L2.5 12C2.21875 12 2 11.78125 2 11.5L2 3.5C2 3.21875 2.21875 3 2.5 3 Z M 4 7L4 8L5 8L5 7 Z M 7 7L7 8L8 8L8 7 Z M 10 7L10 8L11 8L11 7Z" fill="#199e1fff" />
+                                        </svg>
+                                        <span class="me-1 text-silver" style="font-size: 0.85rem !important;">{{ article.approved_comments_count }}</span>
+                                    </div>
+                                </div>
+                                <a href="{{ article.url }}" class="text-decoration-none d-flex">
+                                    <img class="align-self-start" id="left-squared" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADSElEQVR4nO3Wb09TVxzA8ZK9lnvIMgNs4J8BE6fOMUccZBvLssXEZPPpEpM9msk5ElpvQVpqC1KLUKQjDmydbvxxrCJqVDphBapF0g2nFRQh7B18l7vFxAe255Lgo3HewOd77+/ek5/DsXk2z0vOp/285hzGPBIldTjC6tcR1g71snKwh+Uvu3nyWReP60M8qgvy4KMO/qhpY746QHqvj9SuVpKVLUyVN5EoM7lWZtJT6qbWAQW28YZBxnZ6+NuQrAjFU0OxKCRZofjLUPwpJBlDcV8o7glJylBMC8mUofhNKCaE5KahuC4U44bkSuExRgsV39mKcA5jbiQuFKNCcblQMVTiYr824Mh5ZjcaNyRDQvFTsROfNuCrXlZfBW4oLhY1MqANOHSWtfXibzRwy/MrmYZB0rlwIYmVmsS0AQfDrKwHL3FyO5bk8fQj1kZSLObChWJgq5uoNuCLbpbt4lvdTAzOsmTh8fssVQe4kQs3FD9sd9sYwednWLKDV5wgEZ/jqYVfvsviu61cy4cLSd/bzZzTBtR3ktXhu73cuZ7hmYX/PEO2vJmrOtxQ9FZ46NMGfHyah/nwmjamEgusWvj5KR6Wmf9+dFpcHCNc5eF7bUBtkIV8v1p8jmULjyRYKHYSt4sLSdcuL73agJp2Mvn+85F7LE084FnXLTJFjYzaxQ1FaG8rPdqADwLM57tkqgPcHEqRjafJhm6QfsvFkB1cSDr2nSSsDXjPT1p3w73j4UokwXz0dzKBcWa2u7mkww1J+/4AXdqAPT5m7Vyv20yGfWNM999hruc2M1VefsyHC4X/QDud2oAqL0m7d3uJk4uBq0xeSDLXP8nsPj/RXLiQtB44RUgbUNnCpB38+cy3NDIQGCMxfJd0LEkyF25IPHVBgtqAHW4SdvHnM3+9gYhzhLGjl/glFy4UzZ+EOKUNKDMZXw+eb+Yv4obErO/Erw0oPU74VeBC4jrch9QHuKm1driNxitO0HT0go2VzAEF1gJp7XAbiX8b4xuHw+Zm7IACa4EsbuRkkYuBN13ESo8T3WbSv6OJc+XN9FW2ENnp5exuH+E9Prrf93PmwzZCNW2cru2goy5IuzVz67X/9+R28c3zfzv/AA6pfy3PIJl1AAAAAElFTkSuQmCC" alt="left-squared">
+                                    <h5 class="card-title fw-bold text-mod pt-1 px-2" id="title-article">{{ article.title }}</h5>
                                 </a>
-                                <p class="card-text">{{ article.intro | richtext }}</p>
+                                <div class="card-text article-intro my-3">{{ article.intro | richtext | truncatewords_html:50 }}</div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-outline-primary continue-btn" onclick="location.href='{{ article.url }}'">
+                                        ادامه مطلب
+                                        <svg xmlns="http://www.w3.org/2000/svg" id="continue-icon" viewBox="0 0 26 26" width="13" height="13">
+                                            <path d="M10.59375 13L19.179688 4.234375C19.5625 3.84375 19.558594 3.21875 19.171875 2.828125L17.636719 1.292969C17.242188 0.902344 16.609375 0.902344 16.21875 1.296875L5.292969 12.292969C5.097656 12.488281 5 12.742188 5 13C5 13.257813 5.097656 13.511719 5.292969 13.707031L16.21875 24.703125C16.609375 25.097656 17.242188 25.097656 17.636719 24.707031L19.171875 23.171875C19.558594 22.78125 19.5625 22.15625 19.179688 21.765625Z"/>
+                                        </svg>
+                                     </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
         </div>
-        <div class="col-12 col-sm-4">
-
+        <div class="col-12 col-md-4 col-sm-5">
+            {% include "article/_sidebar.html" %}
         </div>
     </div>
 </div>

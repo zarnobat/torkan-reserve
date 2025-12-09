@@ -7,6 +7,7 @@
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/article.css' %}">
+    <script src="{% static 'js/article_page.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -56,8 +57,34 @@
                         <a class="text-decoration-none" herf="#" style="cursor: pointer;">{{ page.category.name }}</a>
                     {% endif %}
                 </div>
+
+                <div class="d-flex align-items-center mt-3">
+                    {% if user.is_authenticated %}
+                        <a class="text-decoration-none" id="like-btn" data-liked="{{ user_liked|yesno:'true,false' }}" data-id="{{ page.id }}" data-url="{% url 'like_article' page.id %}">
+                            <svg id="like-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <span class="text-gold me-1" id="likes-count">{{ likes_count }}</span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-decoration-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                fill="gray"/>
+                            </svg>
+                            <span class="text-gold me-1">{{ likes_count }}</span>
+                        </a>
+                    {% endif %}
+                    <div class="me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="20" height="20">
+                            <path d="M2.5 2C1.675781 2 1 2.675781 1 3.5L1 11.5C1 12.324219 1.675781 13 2.5 13L4 13L4 15.433594L7.652344 13L12.5 13C13.324219 13 14 12.324219 14 11.5L14 3.5C14 2.675781 13.324219 2 12.5 2 Z M 2.5 3L12.5 3C12.78125 3 13 3.21875 13 3.5L13 11.5C13 11.78125 12.78125 12 12.5 12L7.347656 12L5 13.566406L5 12L2.5 12C2.21875 12 2 11.78125 2 11.5L2 3.5C2 3.21875 2.21875 3 2.5 3 Z M 4 7L4 8L5 8L5 7 Z M 7 7L7 8L8 8L8 7 Z M 10 7L10 8L11 8L11 7Z" fill="#199e1fff" />
+                        </svg>
+                        <span class="text-gold me-1">{{ comments_count }}</span>
+                    </div>
+                </div>
             </div>
             <div class="rounded-1 glass-element mb-4 border border-1 border-warning p-2">
+                <h3 class="mb-3 text-gold">ارسال نظر</h3>
                 <form method="post">
                     {% csrf_token %}
                     {{ form | crispy }}
@@ -73,7 +100,7 @@
                             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAEG0lEQVR4nO3WW09cVRTA8UmsiQ+NX8D64MM5AwMNDwSNkoqaqBQasRcq4LU0NvGhNBJTiEDOZoZ0CoU6heHSYQZaENoChRFwCFAKVEBAhuEOhQKFaqs12pD4/jdHJUEz5wzTmhiTrg9wfmvts9Ze22B4HP+nyHHzgtKOLa2BvtQafO9VczvJxa0kF4MpVbSk1pHxfiWh/zqseIjLamX4wHkeROTxkyT4QRasSYIVWbAkKSzIglmTmenoQqZj7VyOtRH16HA1T1k8uA862DDm8rOs8KMWLilMyQKfpDAmC4YjrXwbXUBmjMKOh8LzrvGMaGf8+XweSCI4XBIMygo3jIK+MDNFJoWdQVee+zXecMvD45KgV1K4Jgs6w82cCeokLB7cgSoPNTP7RjELrxczGyK24OLvuKTgMebSFlXAJ9vCc9qJP+BgQw8/3sDawDIbo7fZ6Fvk16Zx7iVXM+EPlwVtkoI7wsrVl21IARPI+ooRvYZLa2B96nt+28Q757jvnuTu5THWD1Uy6g+XBU2S4Mqes+Tq4pnNvKiOmhYebmFua+Vb8Du1I6w6B7llMtPlD5cV6iOtXEoo5VnNBISHc3pznljJohZe/x2rjV5W40rp9YdLglpTLhf3OzikmUBaA3163X60lkU9vGWSleQq+v3hssIFSeDaZydbM4EjtUzqjdpb5czo4e3TrMSX0qWFywqOvXbOaCaQUsWq3pyHmRmpG+WOFt7g5WZoLle1cElQHl9GhWYCh10sBbpkklx4a/zgnhlWjtTSo4fLgpK3KyjVTOAdF0O6N9xfc55YyXD1EItbK0/dBi4r2A47sWomkFxFcyB8c86NAs8rZ+l69Qs6Qsza/3wrLgmKPqohQzOB1Doy1JUaCNea80B4RB6FnzZxUDOBd50Y1X2uh79moyfDzcjpTrzFvYwX9TCa3Ur/sXo8LxX8kYRfXFYoiCulJL1F5yJSY28pNf7wDy8y3D3P+sQ690dWuTuwzNr1BZY7ZrjpnmSm0ctE8wQ+xwAD+x3U/RM3mrGmXeJzQ6BIKGF3pJWhTTxE0KM23Pw9fgmEt03h88zi65rDV9BNu9H8Jy4JrAkV2LLdGA3biehCMtXHhFp5phtfMHj3PL6eBXz9S0ycaORLFY+ykn+ymY8N240YhR1hFgrVfx4i6Dh3nalgcXsv7WEWTu+2cCr9KjnHxnjSEEyYFHaazOSrjwm121Oq6aobZSoQfmWM/g8u4Nys/LNmso7X8nRQ+NaTUF8y6mNic9TetNN0opGO/C56HQN84xzkhr2P7uxWmveVcX6z4RLKsKnHntjAE4ZHjT3FPBdTSI66z9WVqjfn6qip3b7thgsmYh3sUve5ulLVraYuloRyyhKdnFJvuPRGEk962BXURx+H4T+O3wGCINhgVtSO9QAAAABJRU5ErkJggg==" alt="user-male-circle">
                             <span class="fw-bold">{{ comment.display_name }}</span>
                         </div>
-                        <div class="white-glass rounded-2 px-2 pb-2 pt-1">
+                        <div class="white-glass rounded-2 px-2 pb-2 pt-1 shadow-lg">
                             <p class=>{{ comment.content }}</p>
                         </div>
                         <p class="text-date text-silver text-start mt-2 mb-0">
@@ -85,26 +112,7 @@
             {% endif %}
         </div>
         <div class="col-sm-4 col-12">
-            <div class="glass-element rounded-1 border border-1 border-warning">
-                <div class="rounded-1 mb-2 p-2">
-                    <div class="glass-element p-2 rounded-2 border border border-silver text-center">
-                        <h4 class="text-center fs-5">پست‌های اخیر</h4>
-                    </div>
-                </div>
-                {% for new_article in latest_articles %}
-                    <div class="row px-2 mb-3 g-3">
-                        <div class="col-5">
-                            <a href="{{ new_article.url }}">
-                                {% srcset_image new_article.image height-{300,400} style="height:75px; object-fit:fill;" class="img-fluid rounded-3 border border-1 border-silver" alt="new_article.image.caption" %}
-                            </a>
-                        </div>
-                        <div class="col-7">
-                            <a href="{{ new_article.url }}" class="text-mod text-decoration-none"> {{ new_article.title }} </a>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-
+            {% include "article/_sidebar.html" %}
         </div>
     </div>
 </div>
