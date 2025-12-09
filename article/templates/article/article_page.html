@@ -86,26 +86,7 @@
             {% endif %}
         </div>
         <div class="col-sm-4 col-12">
-            <div class="glass-element rounded-1 border border-1 border-warning">
-                <div class="rounded-1 mb-2 p-2">
-                    <div class="glass-element p-2 rounded-2 border border border-silver text-center">
-                        <h4 class="text-center fs-5">پست‌های اخیر</h4>
-                    </div>
-                </div>
-                {% for new_article in latest_articles %}
-                    <div class="row px-2 mb-3 g-3">
-                        <div class="col-5">
-                            <a href="{{ new_article.url }}">
-                                {% srcset_image new_article.image height-{300,400} style="height:75px; object-fit:fill;" class="img-fluid rounded-3 border border-1 border-silver" alt="new_article.image.caption" %}
-                            </a>
-                        </div>
-                        <div class="col-7">
-                            <a href="{{ new_article.url }}" class="text-mod text-decoration-none"> {{ new_article.title }} </a>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-
+            {% include "article/_sidebar.html" %}
         </div>
     </div>
 </div>
