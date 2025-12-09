@@ -1,0 +1,60 @@
+
+{% load wagtailimages_tags %}
+
+<div class="glass-element rounded-1 border border-1 border-warning">
+    
+    <div class="rounded-1 mb-2 p-2">
+        <div class="bd-highlight p-2 rounded-2 border border-silver text-center">
+            <h4 class="text-center fs-5">پست‌های اخیر</h4>
+        </div>
+    </div>
+    {% for new_article in latest_articles %}
+        <div class="row px-2 mb-3 g-3">
+            <div class="col-5">
+                <a href="{{ new_article.url }}">
+                    {% srcset_image new_article.image height-{300,400} style="height:75px;" class="img-fluid rounded-3 border border-1 border-silver" %}
+                </a>
+            </div>
+            <div class="col-7 d-flex flex-column justify-content-around">
+                <a href="{{ new_article.url }}" class="text-mod text-decoration-none">
+                    <span>{{ new_article.title }}</span>
+                </a>
+                <button class="btn btn-outline-primary continue-btn"
+                        onclick="location.href='{{ new_article.url }}'">
+                    ادامه مطلب
+                    <svg xmlns="http://www.w3.org/2000/svg" id="continue-icon" viewBox="0 0 26 26" width="8" height="8">
+                        <path d="M10.59375 13L19.179688 4.234375C19.5625 3.84375 19.558594 3.21875 19.171875 2.828125L17.636719 1.292969C17.242188 0.902344 16.609375 0.902344 16.21875 1.296875L5.292969 12.292969C5.097656 12.488281 5 12.742188 5 13C5 13.257813 5.097656 13.511719 5.292969 13.707031L16.21875 24.703125C16.609375 25.097656 17.242188 25.097656 17.636719 24.707031L19.171875 23.171875C19.558594 22.78125 19.5625 22.15625 19.179688 21.765625Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="rounded-1 mb-2 p-2">
+        <div class="bd-highlight p-2 rounded-2 border border-silver text-center">
+            <h4 class="text-center fs-5">دسته‌بندی‌ها</h4>
+        </div>
+    </div>
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 justify-content-center p-3">
+            {% for category in categories %}
+                <a href="{% url 'category_articles' slug=category.slug %}" class="btn btn-outline-warning categories-tags">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="rounded-1 mb-2 p-2">
+        <div class="bd-highlight p-2 rounded-2 border border-silver text-center">
+            <h4 class="text-center fs-5">برچسب‌ها</h4>
+        </div>
+    </div>
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 justify-content-center p-3">
+            {% for tag in tags %}
+                <span class="btn btn-outline-warning categories-tags">
+                    {{ tag.name }}
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>

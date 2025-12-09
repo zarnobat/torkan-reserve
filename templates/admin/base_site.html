@@ -1,129 +1,19 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
 
+{% block extrastyle %}
+    {{ block.super}}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom_admin.css' %}">
+{% endblock %}
+
 {% block nav-global %}
     {{ block.super }}
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-
-        /* آیکون نوتیف */
-        #notif-icon {
-            position: relative;
-            margin-right: 20px;
-            cursor: pointer;
-            font-size: 24px;
-            color: #ffffff;
-            /* مهم: هیچ transform روی والد نذار تا dropdown ثابت نجه */
-            transition: color 0.2s ease;
-        }
-        #notif-icon:hover { color: #ffd700; }
-
-        /* شمارنده */
-        #notif-count {
-            background: linear-gradient(45deg, #ff3b30, #ff6b6b);
-            color: white;
-            border-radius: 50%;
-            padding: 3px 8px;
-            font-size: 12px;
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            display: none;
-            font-weight: 500;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-
-        /* Dropdown: همیشه داخل صفحه بمونه */
-        #notif-dropdown {
-            display: none;
-            position: fixed;             /* نسبت به ویوپورت */
-            top: 60px;                   /* کمی زیر نوار بالا */
-            right: 20px;                 /* فاصله از راست */
-            background: #1c2526;
-            border-radius: 12px;
-            width: min(90vw, 360px);     /* ریسپانسیو */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            z-index: 10000;
-            animation: slideIn 0.25s ease;
-            font-family: 'Poppins', sans-serif;
-            color: #ffffff;
-            overflow-wrap: break-word;
-        }
-        #notif-dropdown.open { display: block; }  /* کلاس برای نمایش */
-
-        #notif-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        #notif-header h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 500;
-        }
-        #mark-all-read {
-            background: none;
-            border: none;
-            color: #ffd700;
-            font-size: 12px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-        #mark-all-read:hover { color: #ffffff; }
-
-        #notif-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        #notif-list li {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        #notif-list li:hover { background: rgba(255,255,255,0.08); }
-        #notif-list li.unread { background: rgba(255,215,0,0.08); font-weight: 500; }
-
-        #notif-list li a {
-            color: #ffffff;
-            text-decoration: none;
-            display: block;
-            flex: 1;
-            white-space: normal;
-            word-break: break-word;
-        }
-
-        .notif-icon { font-size: 16px; color: #ffd700; }
-        .notif-time { font-size: 12px; color: rgba(255,255,255,0.6); white-space: nowrap; }
-
-        #notif-list::-webkit-scrollbar { width: 8px; }
-        #notif-list::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 4px; }
-        #notif-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* احتیاطی: اسکرول افقی کل صفحه غیرفعال */
-        html, body { overflow-x: hidden; }
-
-        @media (max-width: 600px) {
-            #notif-header h3 { font-size: 14px; }
-            #notif-list li { font-size: 13px; padding: 10px; }
-            .notif-time { font-size: 11px; }
-        }
-    </style>
-
+    <div>
+        <button id="cms-link" onclick="window.open('{{ cms_link }}', '_blank')"> 
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADjElEQVR4nO2YX0hTURzHb1S+RNBDPfbUS+/11kMWarDhmwM3N+/dtKW4TUgCt93bwmm6c4cZqCAkYQn+CY3MPyvLl0jIhBS0pHRB5J+c9CSWM/eLc93uurt307m1P3B/8H3YGefc7+ec3+/c30YQcsghhxwZGSqVKidPXe7KU5et5GvKIU1azteUNWEvcQPgiWk0DkKVNcUNkOadhwitHuIEwgtorDpwegqh3lMI6lotP043FINvMRd8X3LB5iwWPHR2fgH8fv+hNTP/SbBeQgDYOPtGwck5VsiPY+Pgu8Rp/fNlwQMTMe8PSgbIDwqnDYbA5tW1On4cpw2GwOZtTrXggTgFEjH/YS6JKZQJImQATZYBjHt3IJNEyADeLAZomdpOWIdZb1wG8MoAIAN4ZYAdGaDlAADm+z1AMaxAte292QNQXt8qAqi8254lAO9+AXXbLQLAYy+XtjMLoHPiI9R0esA1scaNN09ugrVnUmw+qNbh9/BicZsD0FsbzlAMS1N29mpcAMnS6MImVDS08btb3TYAxsaOqOZDutnSBSTDtlMM2sKfSQZ909awJ1IO4Op7LWmQpBEUWeygNJigQHuDk9JghiKLDSgaRQOrTynAwIwPDI5mkRGdrREUenPUHzIYRGdtFEMz6HepHZ1LWQ3UdY1I7rwihvmQFHpTtJN4mDKAvqnvUOUS5rvKYgvvNFkJ/cMeWFv3cep/PsaNhb5XVduF5mn2q8HmupgyALzOyMImMA+e8iaUhvDuY/ORf630DY2FAfWmwD/mB0nHvVNpuUa733p5gGtaI28Q73okwA/fBv99Qcn13dC8UsZ1Jab5/wnwOA6AtXVfuBZKjDwAaWdz0wIgTiETbxCnSyRAz7MRyRQiGfTEcMt1MjbAkn85mdeoVBEXRRQxhggVce/QKCjIinARWyKLGH0iHe7zMQB2mpIJUPdIfI1SNBIUcoxrNEAyEtcozbqiAvTPQQ4HkaSTGJzdAMMdiReZtTEmBDZfahO/yCiG/Wl0uE8TqQz8+pdsC2jE3fNKvTmAbxsshcEUwGkjufNcIaMqItWBGzDciO2ZQFvBBm16v2aOotErimG7SAb5g6kzq1L1HyXSEbgVxi0xbo0JgiCMxo7jpB2ZpZs8dpek2WKCgCN7c91n8SmSjPsCkUnhcDiOUQz6I4ZAK0S2BEWzqxIA0+n2deAI5nlk7nfvN/EvtgVtn5Y5vXUAAAAASUVORK5CYII=" alt="cms">
+            CMS
+        </button>
+    </div>
     <div id="notif-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
