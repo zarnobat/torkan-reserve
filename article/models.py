@@ -103,10 +103,17 @@ class ArticlePage(Page):
         context = super().get_context(request)
         from .forms import CommentForm
         context["form"] = CommentForm()
-        context["comments"] = self.comments.filter(is_approved=True)
-        context["latest_articles"] = (
-            ArticlePage.objects.live().order_by("-first_published_at")[:3]
-        )
+        approved_comments = self.comments.filter(is_approved=True)
+        context["comments"] = approved_comments
+        context["comments_count"] = approved_comments.count()
+        if request.user.is_authenticated:
+            context["user_liked"] = self.likes.filter(
+                user=request.user).exists()
+        else:
+            context["user_liked"] = False
+        context["likes"] = self.likes.all()
+        context["likes_count"] = context["likes"].count()
+        context.update(ArticleExtraContextMixin().get_extra_context())
         return context
 
     def serve(self, request):
