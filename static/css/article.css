@@ -12,3 +12,39 @@
     cursor: pointer;
     padding: 0;
 }
+
+.article-intro p {
+    font-size: 0.85rem !important;
+    color: #7b7b7b !important;
+    text-shadow: silver 0px 0px 1px !important;
+}
+
+#continue-icon path {
+    fill: #0d6efd !important;
+}
+
+.continue-btn {
+    font-size: 0.75rem !important;
+}
+
+.continue-btn:hover #continue-icon path {
+    fill: white !important;
+}
+
+.categories-tags {
+    font-size: 0.75rem !important;
+}
+
+@media (max-width: 576px) {
+    #title-article {
+        font-size: 1rem !important;
+    }
+
+    .article-intro p {
+        font-size: 0.75rem !important;
+    }
+
+    #left-squared {
+        width: 22px !important;
+    }
+}
