@@ -11,8 +11,8 @@ services:
                     python manage.py collectstatic --noinput && 
                     daphne config.asgi:application --bind 0.0.0.0 --port 8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
     env_file:
       - ../env/.env.stage
     volumes:
@@ -46,6 +46,12 @@ services:
       - "POSTGRES_USER=${DB_USER}"
       - "POSTGRES_PASSWORD=${DB_PASSWORD}"
       - "POSTGRES_DB=${DB_NAME}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   redis:
     image: redis:alpine3.22
     container_name: redis-stage
