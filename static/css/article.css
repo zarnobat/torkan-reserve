@@ -5,3 +5,10 @@
 .border-silver {
     border-color: #C0C0C0 !important;
 }
+
+#like-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
