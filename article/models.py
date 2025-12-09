@@ -6,8 +6,9 @@ from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from modelcluster.fields import ParentalKey, ParentalManyToManyField
 from wagtail.images.models import Image
 from wagtail.snippets.models import register_snippet
-from django.utils.text import slugify
 from django.forms import CheckboxSelectMultiple
+from wagtail.coreutils import cautious_slugify
+from .context_mixins import ArticleExtraContextMixin
 
 
 @register_snippet
@@ -15,16 +16,27 @@ class Category(models.Model):
     name = models.CharField(max_length=100, unique=True,
                             verbose_name="نام دسته‌بندی")
     slug = models.SlugField(
-        unique=True, verbose_name="اسلاگ", max_length=100, editable=False)
+        unique=True, verbose_name="اسلاگ", max_length=100, editable=True, allow_unicode=True,
+        help_text="اسلاگ به صورت خودکار از نام تولید می‌شود، اما می‌توانید آن را ویرایش کنید.اسلاگ برای URL استفاده می‌شود."
+    )
 
     class Meta:
         verbose_name = "دسته‌بندی"
         verbose_name_plural = "دسته‌بندی‌ها"
         ordering = ["name"]
 
-    def save(self, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(**kwargs)
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = cautious_slugify(self.name)
+            slug = base_slug
+            counter = 1
+            # prevent slug duplication
+            while Category.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
