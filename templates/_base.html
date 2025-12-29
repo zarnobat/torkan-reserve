@@ -46,7 +46,9 @@
                             صفحه اصلی</a>
                         </li>
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'profile' %}">پروفایل</a></li>
+                      {% if user.is_authenticated and user.is_staff %}
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'dashboard' %}">مدیریت وظایف</a></li>
+                      {% endif %}
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'about_us' %}">درباره ما</a></li>
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'contact_us' %}">ارتباط با ما</a></li>
                         <li><a class="dropdown-item border-bottom border-2 fw-bold" href="{% url 'article_list' %}">مقاله‌ها</a></li>

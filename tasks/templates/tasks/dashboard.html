@@ -320,7 +320,7 @@
     const [showCatForm, setShowCatForm] = useState(false);
     const [currentCat, setCurrentCat] = useState(null);
     const [catForm, setCatForm] = useState({ name: "", color: "#3B82F6" });
-
+    const isMobile = window.innerWidth < 768;
     const today = new Date().toISOString().split("T")[0];
 
     useEffect(() => {
@@ -561,7 +561,16 @@
     return (
       <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
         {/* سایدبار موبایل */}
-        <div className={`fixed inset-0 z-50 w-72 bg-white dark:bg-gray-800 shadow-xl transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static transition-transform duration-300 overflow-y-auto`}>
+        <div className={`fixed top-0 right-0 z-50
+                          h-full
+                          w-64 sm:w-72
+                          bg-white dark:bg-gray-800
+                          shadow-xl
+                          overflow-y-auto
+                          transform
+                          transition-transform duration-300
+                          ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
+                           md:sticky md:top-0 md:h-screen md:translate-x-0 md:block`}>
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">دسته‌بندی‌ها</h2>
@@ -602,7 +611,7 @@
                 <input type="text" placeholder="جستجو..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                        className="px-5 py-3 rounded-xl border bg-white dark:bg-gray-800 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <select value={filterMode} onChange={e => setFilterMode(e.target.value)} className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700">
                     <option value="all">همه</option>
                     <option value="my">وظایف من</option>
@@ -623,14 +632,20 @@
                     {darkMode ? "☀️" : "🌙"}
                   </button>
 
-                  <button onClick={() => { setCurrentTask(null); setTaskForm({title:"", description:"", start_date:"", end_date:"", priority:"medium", status:"todo", category:"", assignee: CURRENT_USER_ID.toString()}); setShowTaskForm(true); }} className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg">
+                  <button onClick={() => { setCurrentTask(null); setTaskForm({title:"", description:"", start_date:"", end_date:""
+                    , priority:"medium", status:"todo", category:"", 
+                    assignee: CURRENT_USER_ID.toString()}); setShowTaskForm(true); }} 
+                    className="w-full sm:w-auto
+                                bg-blue-600 text-white
+                                px-6 py-4
+                                rounded-xl">
                     + وظیفه جدید
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {statusOrder.map(st => (
                 <div key={st} onDragOver={onDragOver} onDrop={(e) => onDrop(e, st)} className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 md:p-6 shadow-inner">
                   <h3 className="font-bold text-lg mb-4 flex items-center justify-between">
@@ -644,9 +659,9 @@
                       const isOverdue = task.end_date && task.end_date < today && task.status !== "done" && task.status !== "cancelled";
                       return (
                         <div key={task.id}
-                             draggable
+                             draggable={!isMobile}
                              onDragStart={(e) => onDragStart(e, task.id)}
-                             className="bg-white dark:bg-gray-700 rounded-xl shadow-lg p-5 border-l-custom hover:shadow-2xl transition cursor-move select-none"
+                             className="bg-white dark:bg-gray-700 rounded-xl shadow-lg p-4 md:p-5 active:scale-[0.98] transition border-l-custom hover:shadow-2xl transition cursor-move select-none"
                              style={{ borderLeftColor: safeColor(task.category?.color) }}>
                           <h4 className="font-bold text-lg mb-2">{task.title}</h4>
                           {task.description && <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{task.description}</p>}
@@ -660,9 +675,44 @@
                           <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                             ایجادکننده: {getUserName(task.creator)} | انجام‌دهنده: {getUserName(task.assignee)}
                           </div>
-                          <div className="flex gap-4 text-sm">
-                            <button onClick={() => openEditTask(task)} className="text-blue-600 font-medium hover:underline">ویرایش</button>
-                            <button onClick={() => deleteTask(task.id)} className="text-red-600 font-medium hover:underline">حذف</button>
+                          <div className="flex flex-col gap-3 text-sm">
+                            {!isMobile && (
+                              <div className="flex gap-4">
+                                <button
+                                  onClick={() => openEditTask(task)}
+                                  className="text-blue-600 font-medium hover:underline"
+                                >
+                                  ویرایش
+                                </button>
+                              
+                                <button
+                                  onClick={() => deleteTask(task.id)}
+                                  className="text-red-600 font-medium hover:underline"
+                                >
+                                  حذف
+                                </button>
+                              </div>
+                            )}
+                            
+                            {isMobile && (
+                              <select
+                                value={task.status}
+                                onChange={e => handleStatusChange(task.id, e.target.value)}
+                                className="
+                                  w-full
+                                  rounded-lg
+                                  px-3 py-2
+                                  bg-gray-100 dark:bg-gray-600
+                                  border
+                                "
+                              >
+                                {statusOrder.map(st => (
+                                  <option key={st} value={st}>
+                                    {statusMap[st].text}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
                           </div>
                         </div>
                       );
@@ -676,8 +726,8 @@
 
         {/* مودال‌ها - ریسپانسیو */}
         {showTaskForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-4xl shadow-2xl my-8">
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-end md:items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl w-full md:max-w-4xl max-h-[90vh] overflow-y-auto p-4 md:p-6">
               <h2 className="text-2xl md:text-3xl font-bold mb-8">{currentTask ? "ویرایش وظیفه" : "وظیفه جدید"}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
